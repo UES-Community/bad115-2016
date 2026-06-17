@@ -1,0 +1,25 @@
+---
+title: Primera forma normal
+slug: primera-forma-normal
+unit: normalizacion
+summary: Reglas iniciales para eliminar grupos repetidos y valores no atomicos.
+order: 1
+sandbox:
+  enabled: false
+references:
+  - elmasri-2016
+---
+
+## Idea central
+
+Una relacion esta en primera forma normal cuando cada celda contiene valores atomicos y no existen grupos repetidos dentro de una misma fila.
+
+## Ejemplo
+
+Una columna `telefonos` con varios numeros separados por comas dificulta consultar y validar datos. En primera forma normal se modela una tabla separada para los telefonos.
+
+## Revision rapida
+
+<ExerciseBlock title="Diagnostico">
+Busca una tabla de ejemplo con columnas multivaluadas y propone una version en primera forma normal.
+</ExerciseBlock>

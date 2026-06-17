@@ -1,0 +1,29 @@
+[
+  {
+    "id": "silberschatz-2019",
+    "type": "book",
+    "author": "Abraham Silberschatz, Henry F. Korth, S. Sudarshan",
+    "title": "Database System Concepts",
+    "year": "2019",
+    "publisher": "McGraw-Hill",
+    "url": "https://www.db-book.com/"
+  },
+  {
+    "id": "elmasri-2016",
+    "type": "book",
+    "author": "Ramez Elmasri, Shamkant B. Navathe",
+    "title": "Fundamentals of Database Systems",
+    "year": "2016",
+    "publisher": "Pearson"
+  },
+  {
+    "id": "sqlite-docs",
+    "type": "documentation",
+    "author": "SQLite",
+    "title": "SQLite Documentation",
+    "year": "2026",
+    "site": "sqlite.org",
+    "url": "https://sqlite.org/docs.html",
+    "accessed": "2026-06-17"
+  }
+]

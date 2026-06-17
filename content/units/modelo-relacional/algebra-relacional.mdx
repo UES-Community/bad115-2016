@@ -1,0 +1,47 @@
+---
+title: Algebra relacional
+slug: algebra-relacional
+unit: modelo-relacional
+summary: Operadores basicos para consultar relaciones de forma formal.
+order: 1
+sandbox:
+  enabled: true
+  dataset: biblioteca
+references:
+  - silberschatz-2019
+  - elmasri-2016
+  - sqlite-docs
+---
+
+## Idea central
+
+El algebra relacional permite expresar consultas como operaciones sobre conjuntos de tuplas. Sus operadores ayudan a razonar sobre seleccion, proyeccion, union, diferencia y producto cartesiano.
+
+<Callout title="Definicion">
+Una consulta relacional transforma una o mas relaciones de entrada en una nueva relacion de salida.
+</Callout>
+
+## Operadores basicos
+
+| Operador | Proposito |
+| --- | --- |
+| Seleccion | Filtra filas segun una condicion |
+| Proyeccion | Selecciona columnas |
+| Union | Combina filas compatibles |
+| Diferencia | Conserva filas presentes en una relacion y ausentes en otra |
+
+## Ejemplo SQL equivalente
+
+```sql
+SELECT titulo, autor
+FROM libros
+WHERE anio >= 2019;
+```
+
+## Practica guiada
+
+<ExerciseBlock title="Consulta de exploracion">
+Modifica la consulta del sandbox para listar solamente libros publicados desde 2020.
+</ExerciseBlock>
+
+<SQLSandbox dataset="biblioteca" />
