@@ -1,6 +1,21 @@
 import Link from "next/link";
 import { getNavigation, getTopics } from "@/lib/content";
 
+const LEARNING_GOALS = [
+  {
+    title: "Modelar con el modelo relacional",
+    description: "Dominios, claves, álgebra relacional y optimización de consultas."
+  },
+  {
+    title: "Dominar SQL avanzado",
+    description: "Procesamiento lógico, DML, DDL, vistas y rutinas almacenadas."
+  },
+  {
+    title: "Proteger y escalar datos",
+    description: "Integridad, seguridad, indexación, XML e inteligencia de negocios."
+  }
+];
+
 export default function HomePage() {
   const navigation = getNavigation();
   const featured = getTopics().slice(0, 3);
@@ -14,7 +29,7 @@ export default function HomePage() {
         </div>
         <div className="hero-panel">
           <p className="lead">
-            Un sitio estatico con unidades, temas MDX, referencias academicas, navegacion contextual y practicas SQL en navegador.
+            Seis unidades del curso con temas MDX, referencias academicas, navegacion contextual y practicas SQL en navegador.
           </p>
           <Link className="pill-link primary-action" href={`/${navigation[0]?.slug ?? "modelo-relacional"}`}>
             Explorar unidades
@@ -25,11 +40,11 @@ export default function HomePage() {
       <section className="container section">
         <h2>Objetivos de aprendizaje</h2>
         <div className="grid">
-          {["Modelar informacion relacional", "Consultar datos con SQL", "Normalizar esquemas iniciales"].map((goal) => (
-            <div className="card" key={goal}>
+          {LEARNING_GOALS.map((goal) => (
+            <div className="card" key={goal.title}>
               <span className="badge">Objetivo</span>
-              <h3>{goal}</h3>
-              <p className="lead">Contenido de ejemplo preparado para crecer con materiales reales del curso.</p>
+              <h3>{goal.title}</h3>
+              <p className="lead">{goal.description}</p>
             </div>
           ))}
         </div>

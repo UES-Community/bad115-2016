@@ -1,0 +1,31 @@
+---
+title: Lenguaje de Definición de Datos (LDD)
+slug: ldd
+unit: sql-avanzado
+summary: El Lenguaje de Definición de Datos, conocido indistintamente como LDD o DDL, provee la infraestructura sintáctica para concebir, alterar y …
+order: 4
+references:
+  - silberschatz-2019
+  - elmasri-2016
+  - sqlite-docs
+  - unidad-2-ref-04
+---
+
+El Lenguaje de Definición de Datos, conocido indistintamente como LDD o DDL, provee la infraestructura sintáctica para concebir, alterar y erradicar los contenedores esquemáticos de la base de datos. El DDL se distingue fundamentalmente del DML por su interacción con el núcleo de la arquitectura: mientras el DML altera las tuplas albergadas por el usuario, el DDL procesa la inserción y mutación de la información de configuración del Diccionario de Datos. Este diccionario (frecuentemente llamado catálogo del sistema) constituye un reservorio de metadatos protegido y exclusivo del motor, en el cual se inscriben permanentemente los tipos de datos asignados a cada columna, las restricciones de normalización implementadas, los índices de indexación creados y los procedimientos lógicos.  
+Los comandos seminales del DDL abarcan:
+
+* CREATE TABLE / VIEW / PROCEDURE: Edifican las estructuras desde cero, exigiendo la fijación férrea de dominios (enteros, marcas de fecha/hora, caracteres variables) y condicionantes de integridad de entidad (PRIMARY KEY, FOREIGN KEY).  
+* ALTER TABLE: Ejecuta adaptaciones plásticas sobre un esquema existente, tales como adiciones de atributos suplementarios, ampliación del espectro de tipos de datos (VARCHAR(50) a VARCHAR(100)), o inyección de nuevas restricciones sin requerir el desmantelamiento físico de la tabla subyacente.  
+* DROP TABLE: Produce la aniquilación permanente e irrecuperable tanto del esqueleto lógico definido en el Diccionario de Datos como de la persistencia magnética de los datos emparejados a él.
+
+Los proyectos de migración inter-plataforma (e.g., desde ecosistemas Oracle hacia Microsoft Azure Synapse Analytics o clústeres PostgreSQL) exponen profundas asimetrías dialécticas dentro de las implementaciones del DDL. Por ejemplo, en Oracle tradicional, cuando la sintaxis de una consulta requiere seleccionar funciones escalares carentes de un origen de datos tabular, se exige proyectar desde una tabla virtual del sistema unifilar y unicolumnar llamada DUAL (SELECT sysdate FROM dual). Otras tecnologías no prescriben esta redundancia gramatical, requiriendo en procesos de migración la reescritura del DDL para suprimirla, o la generación sintética de una tabla DUAL falsa para apaciguar al compilador. De manera análoga, la tipificación matemática de fechas expone divergencias severas: el tipo DATE en Oracle compila métricas de fecha absoluta y fracciones de tiempo simultáneamente, mientras que entornos como Synapse o SQL Server dividen su LDD en contenedores estancos DATE, TIME y DATETIME, requiriendo mapeos cautelosos y traducciones algorítmicas de la matemática de fechas (DATEADD, DATEDIFF). Además, Oracle trata el carácter vacío ('') matemáticamente como una expresión de tipo de datos de longitud cero análoga al valor NULL, un comportamiento heterodoxo que corrompe la lógica booleana al migrarse a motores que evalúan cadenas vacías y nulos como estados conceptuales distintos.
+
+## Practica guiada
+
+<Callout title="DDL vs DML">
+CREATE y ALTER definen la estructura; INSERT, UPDATE y DELETE modifican las instancias sin cambiar el esquema.
+</Callout>
+
+<ExerciseBlock title="Disenar esquema">
+Escribe un CREATE TABLE para una tabla de cursos con clave primaria y una restriccion CHECK sobre creditos positivos.
+</ExerciseBlock>

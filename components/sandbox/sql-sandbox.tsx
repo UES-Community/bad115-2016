@@ -7,6 +7,7 @@ const datasets: Record<string, { setup: string; query: string; examples: string[
   biblioteca: {
     setup: `
 CREATE TABLE libros (id INTEGER PRIMARY KEY, titulo TEXT, autor TEXT, anio INTEGER);
+CREATE INDEX idx_libros_anio ON libros(anio);
 INSERT INTO libros (titulo, autor, anio) VALUES
   ('Database System Concepts', 'Silberschatz', 2019),
   ('Fundamentals of Database Systems', 'Elmasri', 2016),
@@ -16,7 +17,54 @@ INSERT INTO libros (titulo, autor, anio) VALUES
     examples: [
       "SELECT * FROM libros;",
       "SELECT autor, COUNT(*) AS total FROM libros GROUP BY autor;",
-      "INSERT INTO libros (titulo, autor, anio) VALUES ('Ejemplo BAD115', 'Equipo', 2026); SELECT * FROM libros;"
+      "EXPLAIN QUERY PLAN SELECT titulo FROM libros WHERE anio >= 2019;"
+    ]
+  },
+  universidad: {
+    setup: `
+CREATE TABLE estudiantes (id INTEGER PRIMARY KEY, nombre TEXT, ciudad TEXT, edad INTEGER);
+CREATE TABLE cursos (id INTEGER PRIMARY KEY, nombre TEXT, creditos INTEGER);
+CREATE TABLE inscripciones (estudiante_id INTEGER, curso_id INTEGER,
+  PRIMARY KEY (estudiante_id, curso_id),
+  FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id),
+  FOREIGN KEY (curso_id) REFERENCES cursos(id));
+INSERT INTO estudiantes (nombre, ciudad, edad) VALUES
+  ('Ana', 'San Salvador', 22),
+  ('Luis', 'Santa Ana', 24),
+  ('Marta', 'San Salvador', 21);
+INSERT INTO cursos (nombre, creditos) VALUES
+  ('Bases de Datos', 4),
+  ('Algebra Relacional', 3);
+INSERT INTO inscripciones VALUES (1, 1), (1, 2), (2, 1);
+`,
+    query: "SELECT e.nombre, c.nombre AS curso FROM estudiantes e INNER JOIN inscripciones i ON e.id = i.estudiante_id INNER JOIN cursos c ON c.id = i.curso_id;",
+    examples: [
+      "SELECT * FROM estudiantes WHERE edad > 21;",
+      "SELECT ciudad, COUNT(*) AS total FROM estudiantes GROUP BY ciudad;",
+      "SELECT nombre FROM estudiantes WHERE id NOT IN (SELECT estudiante_id FROM inscripciones WHERE curso_id = 2);"
+    ]
+  },
+  empleados: {
+    setup: `
+CREATE TABLE departamentos (id INTEGER PRIMARY KEY, nombre TEXT NOT NULL UNIQUE);
+CREATE TABLE empleados (
+  id INTEGER PRIMARY KEY,
+  nombre TEXT NOT NULL,
+  salario REAL CHECK (salario > 0),
+  departamento_id INTEGER NOT NULL,
+  FOREIGN KEY (departamento_id) REFERENCES departamentos(id)
+);
+INSERT INTO departamentos (nombre) VALUES ('TI'), ('Finanzas');
+INSERT INTO empleados (nombre, salario, departamento_id) VALUES
+  ('Carla', 1200, 1),
+  ('Pedro', 1500, 2),
+  ('Sofia', 1100, 1);
+`,
+    query: "SELECT e.nombre, d.nombre AS departamento FROM empleados e JOIN departamentos d ON e.departamento_id = d.id;",
+    examples: [
+      "INSERT INTO empleados (nombre, salario, departamento_id) VALUES ('Nuevo', 900, 1);",
+      "UPDATE empleados SET salario = salario * 1.1 WHERE departamento_id = 1; SELECT * FROM empleados;",
+      "DELETE FROM empleados WHERE nombre = 'Pedro';"
     ]
   }
 };

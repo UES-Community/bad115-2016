@@ -1,0 +1,42 @@
+---
+title: Definición de Índices en SQL (Sintaxis, Variantes y Semántica DDL)
+slug: ddl-indices-sql
+unit: indexacion-sql
+summary: El Lenguaje de Definición de Datos (DDL) funge como el mecanismo sintáctico y el puente comunicacional que el arquitecto invoca para forzar…
+order: 5
+references:
+  - silberschatz-2019
+  - elmasri-2016
+  - sqlite-docs
+  - unidad-4-ref-05
+sandbox:
+  enabled: true
+  dataset: biblioteca
+---
+
+El Lenguaje de Definición de Datos (DDL) funge como el mecanismo sintáctico y el puente comunicacional que el arquitecto invoca para forzar, moldear e incrustar las configuraciones tratadas a nivel base. Contrariamente al núcleo dogmático normalizado para los filtros SELECT o JOIN (Data Manipulation Language) regidos férreamente por la ANSI SQL, las definiciones sintácticas para compilar Árboles caen a menudo fuera del consenso regulatorio universal. Como consecuencia, si bien todos los consorcios relacionales parten unánimes desde el verbo primario CREATE INDEX, difieren con una multitud ingente de adornos operacionales a medida que profundizan en capacidades especializadas.  
+El esqueleto sintáctico elemental común asume el siguiente paradigma formativo:
+
+SQL  
+CREATE [UNIQUE] INDEX nombre_indice  
+ON nombre_tabla (columna [ASC|DESC], columna [ASC|DESC], ...)  
+[INCLUDE (columna_adicional, ...)]  
+[WHERE condicion_parcial];
+
+* **Identificación (Index_name) y Contexto Táctico:** Designa una taxonomía textual ineludible alfabética que debe imperar soberanamente como exclusiva dentro de los confines legales de las dependencias globales relacionales o de la estructura matriz. Omitir referenciar un orden de sufijos numéricos lógicos (como ASC para enrutamiento incremental ascendente o DESC en reverso) empujará al motor incondicionalmente al cauce estándar subiendo ascendentemente en la creación topológica de la jerarquía de inserción.  
+* **Restricción Estructural Unívoca (UNIQUE):** Un adosamiento prefijal (CREATE UNIQUE INDEX) invoca una limitación fundamental sistémica que blinda por adelantado la sanidad e inocuidad orgánica impidiendo redundancias. Si la base de datos detecta un registro o intento del operador intentando inyectar un valor dual que preexiste ya en la conformación anatómica de esa columna, disparará una interrupción DML violenta o error negando terminantemente el procesamiento (clonación paralela nula) y protegiendo al nivel primario. La imposición de una constricción referencial tipo PRIMARY KEY o de constricción matemática UNIQUE durante la construcción nativa de una tabla genera y adjunta de manera autónoma subyacente y automática un árbol con directriz de indexado Unívoca en servidores modernos (como dictaminan las regulaciones lógicas bajo SQL Server) dotando, como subproducto afortunado, al optimizador con una cardinalidad impoluta del 100% de confianza para rutas deterministas.  
+* **Construcción Parcializada Excluyente (Filtros WHERE):** Una portentosa y radical ramificación disponible activamente para optimizadores PostgreSQL y ecosistemas análogos bajo nomenclaturas de Microsoft (Índices Filtrados - Filtered Index) recae en dotar al índice de discernimiento propio a nivel basamento de almacenamiento, denegando y filtrando la indexación ciega agregando una cláusula restrictiva de contingencia como subíndice (ej. WHERE deleted_at IS NULL). Si el escenario comprende sistemas con inmensos archivos o bitácoras de transacciones históricas silenciadas (95% de carga fosilizada) contraponiendo meramente pedidos vivos transitorios actuales, un **Índice Parcial** aniquila asombrosa y radicalmente el volumen masivo global y el agobio crónico de memoria RAM del disco, desestimando activamente a las líneas no requeridas del filtro ignorándolas del B+ totalmente, blindado así un árbol sumamente enjuto, rápido e invencible para consultas vivas en producción y minimizando colateralmente su peso penal de inserción y DML general.  
+* **Creaciones Concurrentes Activas sin Paralización de Servicio:** Bajo los requerimientos perentorios de servidores "Always-On" del siglo XXI, detener transacciones DML vitales de una base global para someter la carga de construir un árbol que demanda cuatro horas resulta técnica e industrialmente inaceptable. Las invocaciones estándar de indexación operacionales paralizan y traban de manera gélida (write-locks) y despiadada cualquier inserción que ose atravesar a los confines hasta la finalización algorítmica algorítmica del índice. El motor robusto de PostgreSQL (y ecosistemas Premium homólogos) alivia este tormento habilitando el parámetro flagrante explícito **CONCURRENTLY**25. Mediante este directriz asincrónica, el sistema orquesta la topología de base del índice transitando el montaje escaneando en múltiples tramos espaciados de lectura permitiendo fluidamente que el marco de peticiones general siga escribiendo sin obstaculizar la economía del hardware comercial general transaccional, con el escaso tributo exigido de requerir más paciencia o una espera algorítmica superior para dictaminar un índice integralizado como validado o utilizable por el plan.  
+* **Indexación Condensada Relativa de Prefijos Frontales de Bytes (MySQL):** Cuando se enfrenta al requerimiento colosal de someter o indexar columnas textuales masivas o cadenas largas pesadas (como párrafos literarios VARCHAR amplios, o datos tipados oscuros como BLOB y TEXT), indexar de manera franca el íntegro crudo es físicamente imposible, prohibitivo y penaliza brutal y geométricamente las constricciones de bloque del disco por registro en bases nativas derivadas del soporte de MySQL. El gestor alivia la penuria proporcionando facultativamente al arquitecto del comando fijar y aislar la creación restrictiva para computar el árbol valiéndose exclusiva e imperativamente de una rebanada microscópica superficial indicando el acote límite (ej. nombre_columna(N_caracteres_truncados)). Como producto se construye un rastro hiperrápido a costo de precisión ciega periférica colateral.
+
+## Practica guiada
+
+<Callout title="CREATE INDEX">
+Un indice acelera lecturas por columna filtrada. En SQLite puedes inspeccionar el plan con EXPLAIN QUERY PLAN.
+</Callout>
+
+<ExerciseBlock title="Plan de consulta">
+Ejecuta EXPLAIN QUERY PLAN sobre una consulta filtrada por anio y compara con SELECT * sin filtro.
+</ExerciseBlock>
+
+<SQLSandbox dataset="biblioteca" />

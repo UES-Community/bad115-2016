@@ -8,7 +8,7 @@ export function MainNavigation() {
         <Link href="/modelo-relacional">Unidades</Link>
         <Link href="/referencias">Referencias</Link>
         <Link href="/terms-and-conditions">Terminos</Link>
-        <Link className="pill-link primary-action" href="/modelo-relacional/algebra-relacional">Empezar</Link>
+        <Link className="pill-link primary-action" href="/modelo-relacional/fundamentos-modelo-relacional">Empezar</Link>
       </nav>
     </header>
   );

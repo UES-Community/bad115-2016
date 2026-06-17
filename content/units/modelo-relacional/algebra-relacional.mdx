@@ -1,47 +1,21 @@
 ---
-title: Algebra relacional
+title: "El Álgebra Relacional: La Maquinaria Matemática del Procesamiento"
 slug: algebra-relacional
 unit: modelo-relacional
-summary: Operadores basicos para consultar relaciones de forma formal.
-order: 1
-sandbox:
-  enabled: true
-  dataset: biblioteca
+summary: El mero almacenamiento de vectores indexados sería fútil sin un formalismo diseñado explícitamente para extraer, conjugar y destilar inform…
+order: 2
 references:
   - silberschatz-2019
   - elmasri-2016
   - sqlite-docs
+  - unidad-1-ref-02
 ---
 
-## Idea central
+El mero almacenamiento de vectores indexados sería fútil sin un formalismo diseñado explícitamente para extraer, conjugar y destilar información a partir de múltiples relaciones. El álgebra relacional proporciona dicho formalismo. Se define como un sistema matemático procedimental de alto nivel dotado de operandos y operadores, donde los operandos son invariablemente relaciones estructuradas, y los operadores son símbolos matemáticos diseñados para orquestar manipulaciones sobre dichas entidades.  
+La preeminencia teórica del álgebra relacional emana de su adhesión a la propiedad de clausura o cierre relacional. Este rasgo estipula que el producto o resultado de aplicar cualquier operador válido del álgebra relacional sobre una base de datos produce obligatoria y exclusivamente una nueva relación matemática. Las consecuencias prácticas del cierre relacional son inconmensurables: permite que las operaciones se compongan y aniden indefinidamente, posibilitando que el resultado intermedio de una proyección alimente inmediatamente el operando de una división, lo que a su vez se convierte en el insumo para una diferencia de conjuntos. Esta secuencialidad compositiva provee el cimiento para los árboles de ejecución lógica que los gestores de bases de datos interpretan en las canalizaciones de procesamiento de consultas.
 
-El algebra relacional permite expresar consultas como operaciones sobre conjuntos de tuplas. Sus operadores ayudan a razonar sobre seleccion, proyeccion, union, diferencia y producto cartesiano.
 
-<Callout title="Definicion">
-Una consulta relacional transforma una o mas relaciones de entrada en una nueva relacion de salida.
-</Callout>
-
-## Operadores basicos
-
-| Operador | Proposito |
-| --- | --- |
-| Seleccion | Filtra filas segun una condicion |
-| Proyeccion | Selecciona columnas |
-| Union | Combina filas compatibles |
-| Diferencia | Conserva filas presentes en una relacion y ausentes en otra |
-
-## Ejemplo SQL equivalente
-
-```sql
-SELECT titulo, autor
-FROM libros
-WHERE anio >= 2019;
-```
-
-## Practica guiada
-
-<ExerciseBlock title="Consulta de exploracion">
-Modifica la consulta del sandbox para listar solamente libros publicados desde 2020.
-</ExerciseBlock>
-
-<SQLSandbox dataset="biblioteca" />
+Dentro del ecosistema académico, el álgebra relacional es frecuentemente contrastada con el cálculo relacional. Si bien ambos se emplean para formular consultas exactas sobre el modelo relacional, operan bajo paradigmas diametralmente opuestos.  
+El cálculo relacional es un lenguaje esencialmente declarativo que encuentra su origen en el cálculo de predicados de la lógica de primer orden. En este paradigma, el analista se limita a formular una descripción matemática rigurosa de las propiedades que deben satisfacer las tuplas de respuesta, omitiendo deliberadamente especificar el procedimiento, la heurística o los pasos necesarios para localizar esos datos. El cálculo relacional se bifurca en dos ramificaciones teóricas dependiendo de si sus variables lógicas se asocian a tuplas enteras (Cálculo Relacional de Tuplas) o a atributos individuales (Cálculo Relacional de Dominios).  
+Por su parte, el álgebra relacional es un formalismo estrictamente procedimental. En el álgebra, la interpelación se construye formulando una coreografía detallada, especificando la sucesión algorítmica de los operadores y la manera precisa de obtener el conjunto de datos deseado, trazando una ruta de acceso desde las relaciones base hasta el resultado final.  
+A pesar de sus diferencias sintácticas y de aproximación, el famoso Teorema de Equivalencia de Codd demostró matemáticamente que el álgebra relacional pura y el cálculo relacional seguro poseen el mismo nivel de expresividad teórica; una consulta que pueda solventarse con un método, puede ser inexorablemente solventada con el otro, garantizando que cualquier afirmación lógicamente demostrable tiene un algoritmo relacional homólogo que la ejecute. No obstante, los arquitectos de los sistemas gestores de bases de datos (DBMS) contemporáneos han adoptado un enfoque mixto. Mientras que el Lenguaje de Consulta Estructurado (SQL) que redactan los desarrolladores se inspira sintácticamente en la naturaleza declarativa del cálculo relacional, los componentes internos de procesamiento, partición y optimización de los servidores traducen y expanden estas consultas hacia estructuras basadas firmemente en el álgebra relacional. Esta conversión es imperativa porque las estructuras de árbol del álgebra relacional permiten precomputar múltiples planes de ejecución, inyectar estimaciones de costos, e identificar redundancias de forma algorítmica, tareas que resultan intratables en las ecuaciones abstractas del cálculo relacional.

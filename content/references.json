@@ -1,5 +1,13 @@
 [
   {
+    "id": "elmasri-2016",
+    "type": "book",
+    "author": "Ramez Elmasri, Shamkant B. Navathe",
+    "title": "Fundamentals of Database Systems",
+    "year": "2016",
+    "publisher": "Pearson"
+  },
+  {
     "id": "silberschatz-2019",
     "type": "book",
     "author": "Abraham Silberschatz, Henry F. Korth, S. Sudarshan",
@@ -7,14 +15,6 @@
     "year": "2019",
     "publisher": "McGraw-Hill",
     "url": "https://www.db-book.com/"
-  },
-  {
-    "id": "elmasri-2016",
-    "type": "book",
-    "author": "Ramez Elmasri, Shamkant B. Navathe",
-    "title": "Fundamentals of Database Systems",
-    "year": "2016",
-    "publisher": "Pearson"
   },
   {
     "id": "sqlite-docs",
@@ -25,5 +25,389 @@
     "site": "sqlite.org",
     "url": "https://sqlite.org/docs.html",
     "accessed": "2026-06-17"
+  },
+  {
+    "id": "unidad-1-ref-01",
+    "type": "article",
+    "author": "altaresp.es",
+    "title": "Modelos Relacionales: La Base De La Gestión De Datos - Altare Servicios Profesionales",
+    "year": "2024",
+    "url": "https://altaresp.es/modelos-relacionales/"
+  },
+  {
+    "id": "unidad-1-ref-02",
+    "type": "article",
+    "author": "ocw.unican.es",
+    "title": "Tema 2. El modelo relacional - ocw unican",
+    "year": "2024",
+    "url": "https://ocw.unican.es/pluginfile.php/1839/course/section/1447/Tema2.pdf"
+  },
+  {
+    "id": "unidad-1-ref-03",
+    "type": "article",
+    "author": "zaguan.unizar.es",
+    "title": "Álgebra relacional y optimización heurística de consultas a base de datos - Universidad de Zaragoza",
+    "year": "2024",
+    "url": "https://zaguan.unizar.es/record/97686/files/TAZ-TFG-2020-5186.pdf"
+  },
+  {
+    "id": "unidad-1-ref-04",
+    "type": "article",
+    "author": "www.reddit.com",
+    "title": "¿Alguien usa realmente Álgebra o Cálculo Relacional? : r/SQL - Reddit",
+    "year": "2024",
+    "url": "https://www.reddit.com/r/SQL/comments/1c1nrar/does\\_anyone\\_actually\\_use\\_relational\\_algebra\\_or/?tl=es-419"
+  },
+  {
+    "id": "unidad-1-ref-05",
+    "type": "article",
+    "author": "catedras.facet.unt.edu.ar",
+    "title": "Cátedra de Base de Datos",
+    "year": "2024",
+    "url": "https://catedras.facet.unt.edu.ar/bd/wp-content/uploads/sites/30/2018/10/Bases-de-Datos-Unidad-IV-2018-Parte-I.pdf"
+  },
+  {
+    "id": "unidad-1-ref-06",
+    "type": "article",
+    "author": "www.cs.us.es",
+    "title": "Álgebra Relacional",
+    "year": "2024",
+    "url": "https://www.cs.us.es/cursos/bd-2022/temas/BD-Tema-4.pdf"
+  },
+  {
+    "id": "unidad-1-ref-07",
+    "type": "article",
+    "author": "redtauros.com",
+    "title": "Algebra Relacional - RedTauros",
+    "year": "2024",
+    "url": "http://redtauros.com/Clases/Bases\\_Datos/08\\_Algebra\\_Relacional.pdf"
+  },
+  {
+    "id": "unidad-1-ref-08",
+    "type": "article",
+    "author": "es.scribd.com",
+    "title": "Programa BAD115 2019 | PDF | Base de datos relacional - Scribd",
+    "year": "2024",
+    "url": "https://es.scribd.com/document/406867811/Programa-BAD115-2019"
+  },
+  {
+    "id": "unidad-2-ref-01",
+    "type": "article",
+    "author": "redtauros.com",
+    "title": "Algebra Relacional - RedTauros",
+    "year": "2024",
+    "url": "http://redtauros.com/Clases/Bases\\_Datos/08\\_Algebra\\_Relacional.pdf"
+  },
+  {
+    "id": "unidad-2-ref-02",
+    "type": "article",
+    "author": "ri.uaemex.mx",
+    "title": "BASE DE DATOS y SQL Avanzado - RI UAEMex",
+    "year": "2024",
+    "url": "http://ri.uaemex.mx/bitstream/handle/20.500.11799/64355/secme-36434.pdf?sequence=1\\&isAllowed=y"
+  },
+  {
+    "id": "unidad-2-ref-03",
+    "type": "article",
+    "author": "es.slideshare.net",
+    "title": "Modelamiento de base de Datos - Algebra relacional - Slideshare",
+    "year": "2024",
+    "url": "https://es.slideshare.net/slideshow/modelamiento-de-base-de-datos-algebra-relacional/61269959"
+  },
+  {
+    "id": "unidad-2-ref-04",
+    "type": "article",
+    "author": "es.slideshare.net",
+    "title": "Algebra relacional | PDF - Slideshare",
+    "year": "2024",
+    "url": "https://es.slideshare.net/slideshow/algebra-relacional-41786094/41786094"
+  },
+  {
+    "id": "unidad-2-ref-05",
+    "type": "article",
+    "author": "dialnet.unirioja.es",
+    "title": "álgebra relacional como - lenguaje de acceso a bases de - Dialnet",
+    "year": "2024",
+    "url": "https://dialnet.unirioja.es/descarga/articulo/2281768.pdf"
+  },
+  {
+    "id": "unidad-2-ref-06",
+    "type": "article",
+    "author": "d1b10bmlvqabco.cloudfront.net",
+    "title": "Laboratorio de Base de Datos Práctica Nro. 4, Álgebra Relacional e introducción a consultas en SQL - Cloudfront.net",
+    "year": "2024",
+    "url": "https://d1b10bmlvqabco.cloudfront.net/attach/ix6co4anpqo4iq/iexj3a76c1s2oi/j12jtu763veb/practica\\_4.pdf"
+  },
+  {
+    "id": "unidad-2-ref-07",
+    "type": "article",
+    "author": "www.youtube.com",
+    "title": "ÁLGEBRA RELACIONAL: Operaciones de SELECCIÓN y PROYECCIÓN Explicadas Paso a Paso | Tutorial Completo - YouTube",
+    "year": "2024",
+    "url": "https://www.youtube.com/watch?v=4xKbMxZaJHw"
+  },
+  {
+    "id": "unidad-2-ref-08",
+    "type": "article",
+    "author": "tesiunamdocumentos.dgb.unam.mx",
+    "title": "T E S I S - UNAM",
+    "year": "2024",
+    "url": "https://tesiunamdocumentos.dgb.unam.mx/ptb2010/octubre/0663457/0663457.pdf"
+  },
+  {
+    "id": "unidad-3-ref-01",
+    "type": "article",
+    "author": "www.trendmicro.com",
+    "title": "Qué es la integridad de los datos y por qué es importante? | Trend Micro (ES)",
+    "year": "2024",
+    "url": "https://www.trendmicro.com/es\\_es/what-is/data-integrity.html"
+  },
+  {
+    "id": "unidad-3-ref-02",
+    "type": "article",
+    "author": "www.fortinet.com",
+    "title": "¿Qué es la integridad de datos? ¿Por qué es importante? - Fortinet",
+    "year": "2024",
+    "url": "https://www.fortinet.com/lat/resources/cyberglossary/data-integrity"
+  },
+  {
+    "id": "unidad-3-ref-03",
+    "type": "article",
+    "author": "www.ibm.com",
+    "title": "Integridad de los datos vs. calidad de los datos: ¿cuál es la diferencia? | IBM",
+    "year": "2024",
+    "url": "https://www.ibm.com/es-es/think/topics/data-integrity-vs-data-quality"
+  },
+  {
+    "id": "unidad-3-ref-04",
+    "type": "article",
+    "author": "www.actian.com",
+    "title": "¿Qué es la integridad de los datos? | Información en una base de datos - Actian Corporation",
+    "year": "2024",
+    "url": "https://www.actian.com/es/blog/data-intelligence/what-is-data-integrity/"
+  },
+  {
+    "id": "unidad-3-ref-05",
+    "type": "article",
+    "author": "www.ibm.com",
+    "title": "¿Qué es la integridad de los datos? - IBM",
+    "year": "2024",
+    "url": "https://www.ibm.com/es-es/think/topics/data-integrity"
+  },
+  {
+    "id": "unidad-3-ref-06",
+    "type": "article",
+    "author": "www.sqlshack.com",
+    "title": "Restricciones en SQL Server: SQL NOT NULL, UNIQUE y SQL PRIMARY KEY",
+    "year": "2024",
+    "url": "https://www.sqlshack.com/es/restricciones-en-sql-server-sql-not-null-unique-y-sql-primary-key/"
+  },
+  {
+    "id": "unidad-3-ref-07",
+    "type": "article",
+    "author": "urianviera.com",
+    "title": "Integridad de Datos y Restricciones en SQL",
+    "year": "2024",
+    "url": "https://urianviera.com/sql/integridad-de-datos-y-restricciones"
+  },
+  {
+    "id": "unidad-3-ref-08",
+    "type": "article",
+    "author": "es.wikibooks.org",
+    "title": "Manual del estudiante de Ingeniería en Sistemas de UTN/Bases de datos avanzadas/Integridad de los datos - Wikilibros",
+    "year": "2024",
+    "url": "https://es.wikibooks.org/wiki/Manual\\_del\\_estudiante\\_de\\_Ingenier%C3%ADa\\_en\\_Sistemas\\_de\\_UTN/Bases\\_de\\_datos\\_avanzadas/Integridad\\_de\\_los\\_datos"
+  },
+  {
+    "id": "unidad-4-ref-01",
+    "type": "article",
+    "author": "www.gob.mx",
+    "title": "Fundamentos de bases de datos Quinta edición - Gob MX",
+    "year": "2024",
+    "url": "https://www.gob.mx/cms/uploads/attachment/file/1001638/Fundamentos-de-bases-de-datos\\_a.pdf"
+  },
+  {
+    "id": "unidad-4-ref-02",
+    "type": "article",
+    "author": "apps.salud.gob.mx",
+    "title": "Tema 1: Conceptos Básicos de los sistemas de Bases de Datos.",
+    "year": "2024",
+    "url": "http://apps.salud.gob.mx/unidades/dgti/capacitacion/manuales/Introduccion%20a%20las%20bases%20de%20datos.pdf"
+  },
+  {
+    "id": "unidad-4-ref-03",
+    "type": "article",
+    "author": "biblat.unam.mx",
+    "title": "Manual de indización para las bases de datos Clase y Periódica - Biblat",
+    "year": "2024",
+    "url": "https://biblat.unam.mx/archivos/manual\\_indizacion.pdf"
+  },
+  {
+    "id": "unidad-4-ref-04",
+    "type": "article",
+    "author": "medium.com",
+    "title": "B Trees and B+ Trees. When it comes to indexing and efficient… | by AkashSDas | Medium",
+    "year": "2024",
+    "url": "https://medium.com/@akashsdas\\_dev/b-trees-and-b-trees-682d363df1f7"
+  },
+  {
+    "id": "unidad-4-ref-05",
+    "type": "article",
+    "author": "www.w3resource.com",
+    "title": "SQL: CREATE INDEX - w3resource",
+    "year": "2024",
+    "url": "https://www.w3resource.com/sql/creating-index/sql-creating-index.php"
+  },
+  {
+    "id": "unidad-4-ref-06",
+    "type": "article",
+    "author": "stackoverflow.com",
+    "title": "Difference between clustered and nonclustered index [duplicate] - Stack Overflow",
+    "year": "2024",
+    "url": "https://stackoverflow.com/questions/5070529/difference-between-clustered-and-nonclustered-index"
+  },
+  {
+    "id": "unidad-4-ref-07",
+    "type": "article",
+    "author": "www.dbvis.com",
+    "title": "A Complete Guide to the SQL CREATE INDEX Statement - DbVisualizer",
+    "year": "2024",
+    "url": "https://www.dbvis.com/thetable/a-complete-guide-to-the-sql-create-index-statement/"
+  },
+  {
+    "id": "unidad-4-ref-08",
+    "type": "article",
+    "author": "hightouch.com",
+    "title": "SQL Create Index - Syntax, Use Cases, and Examples - Hightouch",
+    "year": "2024",
+    "url": "https://hightouch.com/sql-dictionary/sql-create-index"
+  },
+  {
+    "id": "unidad-5-ref-01",
+    "type": "article",
+    "author": "github.com",
+    "title": "GitHub - octavianN/Schematron-step-by-step: A Schematron tutorial, presentation and sample files.",
+    "year": "2024",
+    "url": "https://github.com/octavianN/Schematron-step-by-step"
+  },
+  {
+    "id": "unidad-5-ref-02",
+    "type": "article",
+    "author": "docs.ted.europa.eu",
+    "title": "Schematron files - TED Developer Docs - European Union",
+    "year": "2024",
+    "url": "https://docs.ted.europa.eu/eforms/latest/schematrons/index.html"
+  },
+  {
+    "id": "unidad-5-ref-03",
+    "type": "article",
+    "author": "www.xml.com",
+    "title": "An Introduction to Schematron - XML.com",
+    "year": "2024",
+    "url": "https://www.xml.com/pub/a/2003/11/12/schematron.html"
+  },
+  {
+    "id": "unidad-5-ref-04",
+    "type": "article",
+    "author": "technology.amis.nl",
+    "title": "Extending XML Document Validation with Schematron - Conclusion AMIS Technology Blog",
+    "year": "2024",
+    "url": "https://technology.amis.nl/it/extend-xml-document-validation-with-schematron/"
+  },
+  {
+    "id": "unidad-5-ref-05",
+    "type": "article",
+    "author": "stackoverflow.com",
+    "title": "xml - Schematron - Element validation based on its position - Stack Overflow",
+    "year": "2024",
+    "url": "https://stackoverflow.com/questions/29234302/schematron-element-validation-based-on-its-position"
+  },
+  {
+    "id": "unidad-5-ref-06",
+    "type": "article",
+    "author": "www.mimuw.edu.pl",
+    "title": "XML Schema and alternatives - mimuw",
+    "year": "2024",
+    "url": "https://www.mimuw.edu.pl/\\~czarnik/zajecia/xml14/04-alternatives-slides.pdf"
+  },
+  {
+    "id": "unidad-5-ref-07",
+    "type": "article",
+    "author": "stackoverflow.com",
+    "title": "XML Validation: XSD or Schematron? - Stack Overflow",
+    "year": "2024",
+    "url": "https://stackoverflow.com/questions/21378669/xml-validation-xsd-or-schematron"
+  },
+  {
+    "id": "unidad-5-ref-08",
+    "type": "article",
+    "author": "www.scribd.com",
+    "title": "XSD and Schematron Validation - Part 1 | PDF | Xml Schema | Xslt - Scribd",
+    "year": "2024",
+    "url": "https://www.scribd.com/document/37821120/Xsd-and-Schematron-Validation-Part-1"
+  },
+  {
+    "id": "unidad-6-ref-01",
+    "type": "article",
+    "author": "publications.iadb.org",
+    "title": "ECONOMÍA DEL DATO PARA PYMES: - IADB Publications",
+    "year": "2024",
+    "url": "https://publications.iadb.org/publications/spanish/document/economia-del-dato-para-pymes-claves-para-impulsar-los-negocios-en-la-era-digital-es.pdf"
+  },
+  {
+    "id": "unidad-6-ref-02",
+    "type": "article",
+    "author": "escala.com",
+    "title": "Aprende a hacer inteligencia de negocios en tu organización - Escala",
+    "year": "2024",
+    "url": "https://escala.com/inteligencia-de-negocios/"
+  },
+  {
+    "id": "unidad-6-ref-03",
+    "type": "article",
+    "author": "esieduc.org",
+    "title": "Certificación Inteligencia de negocios y analítica de datos - ESI School of Management",
+    "year": "2024",
+    "url": "https://esieduc.org/inteligencia-de-negocios-y-analitica-de-datos/"
+  },
+  {
+    "id": "unidad-6-ref-04",
+    "type": "article",
+    "author": "miuniversity.edu",
+    "title": "Maestría en Inteligencia de Negocios Online | MIUniversity",
+    "year": "2024",
+    "url": "https://miuniversity.edu/es/academics/master-degree/maestria-en-inteligencia-de-negocio/"
+  },
+  {
+    "id": "unidad-6-ref-05",
+    "type": "article",
+    "author": "news.microsoft.com",
+    "title": "El 91% de PyMEs en El Salvador aceleró su proceso de transformación digital durante la pandemia - News Center Latinoamérica - Microsoft Source",
+    "year": "2024",
+    "url": "https://news.microsoft.com/es-xl/el-91-de-pymes-en-el-salvador-acelero-su-proceso-de-transformacion-digital-durante-la-pandemia/"
+  },
+  {
+    "id": "unidad-6-ref-06",
+    "type": "article",
+    "author": "blog.bismart.com",
+    "title": "Data warehousing: ETL, OLAP y OLTP - Blog de Bismart",
+    "year": "2024",
+    "url": "https://blog.bismart.com/data-warehouse-etl-olap-oltp"
+  },
+  {
+    "id": "unidad-6-ref-07",
+    "type": "article",
+    "author": "www.ibm.com",
+    "title": "¿Qué es un almacén de datos? | IBM",
+    "year": "2024",
+    "url": "https://www.ibm.com/es-es/think/topics/data-warehouse"
+  },
+  {
+    "id": "unidad-6-ref-08",
+    "type": "article",
+    "author": "www.ibm.com",
+    "title": "¿Qué es un almacén de datos? - IBM",
+    "year": "2024",
+    "url": "https://www.ibm.com/mx-es/think/topics/data-warehouse"
   }
 ]

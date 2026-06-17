@@ -1,0 +1,33 @@
+---
+title: "Fundamentos Teóricos: Convergencia entre Integridad, Calidad y Seguridad"
+slug: fundamentos-integridad
+unit: integridad-seguridad
+summary: En el ámbito de la ingeniería de datos y la administración de sistemas gestores de bases de datos (SGBD) empresariales, los conceptos de in…
+order: 1
+references:
+  - silberschatz-2019
+  - elmasri-2016
+  - sqlite-docs
+  - unidad-3-ref-01
+---
+
+En el ámbito de la ingeniería de datos y la administración de sistemas gestores de bases de datos (SGBD) empresariales, los conceptos de integridad, calidad y seguridad representan dimensiones distintas pero profundamente entrelazadas que dictaminan la viabilidad operativa de una organización. A menudo, estos términos se confunden en la literatura menos especializada, pero desde una perspectiva arquitectónica, abordan el ciclo de vida de la información desde vectores completamente diferentes.  
+La seguridad de los datos comprende el conjunto de políticas, controles de acceso, cifrado y mecanismos de autorización diseñados para proteger los activos de información contra el acceso no autorizado, la exfiltración o la manipulación maliciosa. En contraparte, la integridad de los datos es un paradigma holístico que garantiza que la información almacenada permanezca correcta, consistente y rastreable a lo largo de todo su ciclo de vida, independientemente de los vectores de ataque o de los procesos de transformación sistémica a los que se someta.  
+Es fundamental establecer una demarcación teórica entre la calidad de los datos y la integridad de los mismos. La calidad de los datos se evalúa mediante un análisis puntual de utilidad para un contexto de negocio dado, basándose en seis dimensiones principales: precisión (reflejo de la realidad), completitud (ausencia de valores en blanco), coherencia (sincronización entre múltiples sistemas), validez (formato adecuado), unicidad (ausencia de duplicados) y puntualidad (disponibilidad temporal). La calidad responde a la pregunta inmediata: "¿Es este valor correcto en este instante?". Por el contrario, la integridad de los datos responde a una interrogante proyectiva y de garantía: "¿Podemos confiar en que este valor se mantenga correcto a lo largo del tiempo, y que cualquier alteración sea autorizada, detectada y recuperable?"1. Es perfectamente factible poseer datos de alta calidad con una integridad deficiente (datos correctos hoy, pero vulnerables a manipulación silente mañana), así como controles de integridad formidables sobre datos de baja calidad (un dato incorrecto que está criptográficamente protegido contra modificaciones).  
+La carencia de una integridad estructural sólida genera impactos devastadores que se manifiestan en cinco áreas críticas de la organización:
+
+1. **Fallo en la toma de decisiones:** Los modelos de analítica avanzada, la inteligencia de negocios y la detección de fraudes colapsan cuando se alimentan de registros alterados. Actuar con confianza sobre información incorrecta genera riesgos sistémicos.  
+2. **Parálisis operativa:** Ante la más mínima sospecha de corrupción de datos, los equipos técnicos imponen verificaciones manuales y congelan los flujos de trabajo automatizados, afectando la cadena de suministro, la facturación y la infraestructura crítica.  
+3. **Obstaculización de la respuesta de seguridad:** Las investigaciones forenses pierden viabilidad si los registros de auditoría y las alertas (artefactos de integridad) pueden ser alterados por un atacante para cubrir sus huellas.  
+4. **Incertidumbre en la recuperación:** Tras incidentes como ataques de *ransomware*, el desafío principal no es simplemente restaurar una copia de seguridad, sino demostrar forensemente que la información restaurada está limpia, es confiable y no fue envenenada en fases previas de la cadena de suministro.  
+5. **Exposición financiera masiva:** La pérdida de negocios, las multas regulatorias (como el incumplimiento del GDPR europeo) y los costos de remediación representan un impacto monetario directo que asciende a millones de libras esterlinas o dólares en el caso de violaciones mayores.
+
+Para mitigar estos riesgos, la arquitectura de bases de datos relacionales aplica la integridad en cinco dimensiones formales:
+
+| Dimensión de Integridad | Enfoque Arquitectónico | Amenazas Mitigadas |
+| :---- | :---- | :---- |
+| **Integridad Física** | Garantiza la corrección de los datos en los medios de almacenamiento físico y durante su recuperación. | Cortes de energía, desastres naturales, fallos de hardware electromagnético, hackers que atacan la capa de almacenamiento. |
+| **Integridad de Entidad** | Asegura que cada estructura dentro de una tabla sea identificable de manera unívoca mediante claves primarias, evitando la duplicación silente. | Registros fantasma, sobreescritura accidental, colisiones de identificadores. |
+| **Integridad Referencial** | Mantiene la cohesión entre múltiples tablas, imponiendo reglas de dependencia jerárquica mediante claves foráneas. | Registros huérfanos, eliminación accidental de datos maestros referenciados. |
+| **Integridad de Dominio** | Restringe los valores ingresados a un formato, longitud y tipo de dato matemáticamente predefinido. | Inyección de datos corruptos, errores tipográficos, desbordamiento de búfer lógico. |
+| **Definida por el Usuario** | Conjunto de reglas semánticas y de negocio personalizadas que no pueden encapsularse en los dominios estándar. | Violaciones de lógica de negocio compleja que requieren validaciones cruzadas. |

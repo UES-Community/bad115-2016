@@ -1,0 +1,32 @@
+---
+title: "Arquitectura Defensiva: Seguridad y Autorización mediante el LCD/DCL"
+slug: seguridad-dcl
+unit: integridad-seguridad
+summary: Las políticas de integridad garantizan la viabilidad interna de los datos, pero ceden el frente exterior de las defensas a la infraestructu…
+order: 5
+references:
+  - silberschatz-2019
+  - elmasri-2016
+  - sqlite-docs
+  - unidad-3-ref-05
+---
+
+Las políticas de integridad garantizan la viabilidad interna de los datos, pero ceden el frente exterior de las defensas a la infraestructura de seguridad lógica. Esta matriz de protección de acceso se instrumenta exclusivamente a través de la segmentación sintáctica del sublenguaje conocido como Lenguaje de Control de Datos (Data Control Language - DCL).  
+El DCL es la capa fundamental responsable de regir con meticulosidad criptográfica qué entidades virtuales poseen autorización para sondear o mutar los elementos del esquema relacional, proveyendo un mecanismo centralizado para rechazar intrusiones provenientes tanto de agentes externos nocivos como del fraude interno derivado de usuarios corporativos carentes de legitimidad de acceso.
+
+
+La asignación granular de derechos interactúa bajo un protocolo estricto protagonizado por instrucciones fundamentales:
+
+* **GRANT:** Representa la instrucción fundacional de concesión de autorización. Permite traspasar la jurisdicción operativa a un individuo o entidad de red, habilitándolo a consumar tareas sobre tablas u objetos seleccionados. Al ampararse con la cláusula complementaria WITH GRANT OPTION, se delega adicionalmente la facultad administrativa, empoderando al receptor para que redistribuya ese mismo privilegio a actores en estratos organizacionales inferiores.  
+* **REVOKE:** Operando como el antagonista directo del GRANT, este comando extrae y suprime los derechos concedidos previamente sobre un recurso. En escenarios complejos, las directivas de exclusión pueden requerir la palabra clave CASCADE, la cual orquesta una erradicación recursiva de los permisos a través de todo el árbol de descendencia de privilegios (eliminando los derechos de todos aquellos usuarios que obtuvieron permiso derivados del infractor original que ostentaba el GRANT OPTION).
+
+Junto a estos, surge un tercer componente crítico e intransigente en materia de aseguramiento:
+
+* **DENY:** Implementado extensivamente en entornos jerárquicos como Microsoft SQL Server, este comando configura una barrera absolutista inquebrantable que deniega terminantemente a un actor la adquisición de una facultad. A diferencia de un REVOKE que meramente anula un pase positivo, el DENY tiene precedencia suprema. Dentro de un escenario donde un usuario operativo forma parte de un rol corporativo global que goza de derechos permisivos GRANT SELECT a nivel de base de datos, si el administrador del SGBD impone un DENY SELECT específicamente sobre la tabla de salarios para ese usuario particular, el motor evaluará los vectores de choque y, haciendo prevalecer el DENY, abortará instantáneamente cualquier sondeo. Únicamente la membresía en roles administradores intocables (como el sysadmin) elude esta jurisdicción.
+
+**Categorización Dimensional de los Privilegios:** El modelo de seguridad opera en dos grandes polos conceptuales:
+
+1. **Privilegios de Sistema:** Proveen potestad expansiva capaz de alterar el panorama operacional y la configuración profunda del motor, desde el levantamiento de instancias o manipulación del disco (CREATE DATABASE, ALTER SYSTEM), la forja y supresión general de usuarios (CREATE USER), hasta perfiles especiales con poder total de superusuario como SYSDBA o SYSOPER en Oracle. Afectan a la instancia de manera transversal.  
+2. **Privilegios de Objeto:** Limitan asépticamente su rango de eficacia hacia entidades atómicas dentro de la estructura relacional. Enmarcan de manera exhaustiva el uso lícito de verbos como SELECT, UPDATE, INSERT, DELETE sobre una tabla particular, o el mandato de EXECUTE sobre fragmentos de código, rutinas y procedimientos almacenados precompilados.
+
+Dada la colosal ineficiencia de gestionar interacciones uno a uno en entornos habitados por decenas de miles de conexiones y la proclividad al fallo humano de omisión, el DCL asiste al paradigma universal del Control de Acceso Basado en Roles (RBAC, *Role-Based Access Control*). Un Rol relacional funciona como un envoltorio o clúster virtual vacío al que se adhieren sistemáticamente decenas de privilegios dispares. Posteriormente, las identidades reales de los usuarios son anexadas como "miembros" de este rol, adoptando dinámicamente y con efecto inmediato todo el abanico perimetral de facultades preconfiguradas, elevando la auditabilidad a un nivel centralizado.
