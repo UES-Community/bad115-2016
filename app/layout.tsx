@@ -22,7 +22,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="es">
       <body>
-        <Theme appearance="light" accentColor="gray" radius="large">
+        <Theme appearance="light" accentColor="orange" grayColor="slate" panelBackground="translucent" radius="large">
           <div className="site-shell">
             <MainNavigation />
             {children}

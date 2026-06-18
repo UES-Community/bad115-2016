@@ -108,7 +108,7 @@ export function SQLSandbox({ dataset = "biblioteca" }: { dataset?: string }) {
       <p>Ejecuta consultas en una base SQLite local del navegador. Los datos se reinician en cada ejecucion.</p>
       <textarea value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Editor SQL" />
       <div className="sandbox-toolbar">
-        <button type="button" onClick={() => run()}>Ejecutar</button>
+        <button type="button" className="btn-run" onClick={() => run()}>Ejecutar</button>
         <button type="button" onClick={() => setQuery(config.query)}>Resetear consulta</button>
         <button type="button" onClick={() => navigator.clipboard.writeText(query)}>Copiar</button>
       </div>

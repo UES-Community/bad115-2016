@@ -253,7 +253,7 @@ function firstSentence(text: string, maxLen = 140) {
 function splitTopics(content: string) {
   const lines = content.split("\n");
   const topics: { title: string; body: string }[] = [];
-  let intro: string[] = [];
+  const intro: string[] = [];
   let currentTitle = "";
   let currentBody: string[] = [];
   let seenH2 = false;
@@ -316,7 +316,7 @@ function migrateUnit(config: UnitConfig) {
     throw new Error(`Missing doc file: ${docPath}`);
   }
 
-  let raw = fs.readFileSync(docPath, "utf8");
+  const raw = fs.readFileSync(docPath, "utf8");
   const { cleaned: withoutImages, imageMap } = extractImages(raw, config.slug);
   const { body: withoutBib, bibliography } = stripBibliography(withoutImages);
   const unitRefs = parseBibliography(bibliography, config.order).slice(0, 8);
