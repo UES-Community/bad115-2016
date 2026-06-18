@@ -11,27 +11,50 @@ references:
   - unidad-3-ref-06
 ---
 
-El paradigma tradicional de asignación de privilegios se fundamenta en un modelo de bloqueo binario: un sujeto operativo adquiere la potestad total de sondear los registros de una tabla, o la pierde categóricamente. La modernidad del desarrollo de software centrado en soluciones como el *Software as a Service* (SaaS) y bases de datos multicliente (multi-tenant architecture) dinamitó la viabilidad de este postulado. Es inaceptable otorgar a un cliente acceso global a la tabla de facturación; el modelo demanda que el SGBD imponga quirúrgicamente un manto de invisibilidad que segregue registros basándose en el ecosistema organizacional, de modo que cada individuo divisese de forma transparente únicamente la proporción fraccionaria de los datos correspondientes a su perfil de acceso particular.  
-Para satisfacer esta necesidad crítica surgió el paradigma del Control de Acceso de Grano Fino (Fine-Grained Access Control, FGAC).
+El paradigma tradicional de asignación de privilegios se fundamenta en un bloqueo binario: un usuario tiene acceso completo a una tabla o carece de él por completo. Sin embargo, en aplicaciones modernas como el software multi-cliente (SaaS), se requiere restringir el acceso para que cada cliente vea únicamente sus propios registros de forma transparente.
 
+Para solucionar este desafío de seguridad surge el **Control de Acceso de Grano Fino (FGAC - Fine-Grained Access Control)**.
 
-Integrada orgánicamente en motores vanguardistas como PostgreSQL (a partir de su versión 9.5) y Microsoft SQL Server, la Seguridad a Nivel de Fila o RLS representa el mecanismo de filtración incrustado nativamente para aplicar políticas defensivas multidimensionales en el nivel de registro. RLS erradica la dependencia de implementar validaciones inseguras en el código fuente de los lenguajes de programación intermedia de la aplicación (Java, Python, C#), las cuales a menudo son vulnerables a fallas lógicas. Al delegar la restricción al plano del almacenamiento, se erige un esquema genuino de defensa en profundidad.  
-La anatomía procedimental se compone del ensamblaje de dos comandos primarios. En una primera fase se emite ALTER TABLE entidad ENABLE ROW LEVEL SECURITY para someter activamente a una entidad bajo este protocolo riguroso. Simultáneamente, el SGBD demanda la estipulación de reglas algorítmicas de interceptación instanciadas por la palabra reservada CREATE POLICY.  
-Durante el tránsito de una consulta arbitraria a través del analizador del motor de base de datos, el optimizador injerta encubiertamente en segundo plano fragmentos condicionantes (agregados dinámicos a la cláusula WHERE) que reescriben drásticamente el árbol de evaluación basado en la información de identidad del emisor o contextos globales del sistema (como current_user()).  
-Las políticas dictaminan dos vertientes de interceptación operativa:
+---
 
-* **Cláusula USING:** Inyecta su lógica para auditar operaciones de sondeo y de alteración sobre perfiles preexistentes en la base de datos (eventos atados a SELECT, UPDATE y DELETE). Si la evaluación retorna un falso booleano, la tupla infractora simplemente es suprimida de los resultados enviados a la vista, simulando matemáticamente que el registro jamás existió sin desencadenar excepciones visuales.  
-* **Cláusula WITH CHECK:** Configura una barrera intransigente a la entrada contra los verbos de modificación inyectiva (INSERT, UPDATE). Esta capa examina los valores modificados albergados virtualmente dentro del vector de mutación *antes* de finalizar la escritura al archivo de disco. Si el nuevo valor proyectado contraviene la directriz de seguridad (por ejemplo, intentar modificar una factura propia para transferirla ilegítimamente a otra entidad competidora), el SGBD detiene abruptamente el evento desencadenando un mensaje de error explícito de transgresión.
+### Seguridad a Nivel de Fila (Row-Level Security - RLS)
 
-Asimismo, las reglas admiten entrelazado condicional complejo mediante los parámetros de interacción. Políticas concurrentes pueden declararse bajo modalidad **Permisiva** (la cual suma los permisos en cascada uniéndolos mediante un engranaje OR, ampliando la visión) o bajo modalidad **Restrictiva** (los cuales obran como barreras asfixiantes unidas por el eslabón AND, forzando escenarios donde cada y todas las condicionantes extremas deben cumplirse para autorizar el paso).
+Integrada de forma nativa en motores como PostgreSQL y SQL Server, RLS permite aplicar políticas de seguridad a nivel de registros individuales. Al delegar esta validación a la base de datos, se evita implementar lógica de seguridad dispersa e insegura en la capa de la aplicación.
+
+#### Mecánica de RLS:
+1. **Habilitación:** Se activa en una tabla mediante:
+   ```sql
+   ALTER TABLE tabla_nombre ENABLE ROW LEVEL SECURITY;
+   ```
+2. **Definición de Políticas:** Se establecen reglas utilizando `CREATE POLICY`.
+3. **Reescritura de Consultas:** Cuando un usuario realiza una consulta, el motor agrega dinámicamente predicados de filtrado (cláusulas `WHERE`) en segundo plano según la identidad del usuario (`current_user()`).
+
+#### Cláusulas de las Políticas RLS:
+* **USING:** Aplica para consultas de lectura y actualización (`SELECT`, `UPDATE`, `DELETE`). Si la condición es falsa, los registros simplemente se ocultan (como si no existieran), sin levantar errores.
+* **WITH CHECK:** Valida las operaciones de inserción y modificación (`INSERT`, `UPDATE`). Si el nuevo registro viola la política, el DBMS bloquea la operación y lanza una excepción.
+
+#### Modos de Combinación:
+* **Permisiva:** Las políticas se suman mediante operadores `OR` (amplía el acceso).
+* **Restrictiva:** Las políticas se aplican mediante operadores `AND` (añade barreras adicionales).
+
+---
 
 ### Bases de Datos Virtuales Privadas (VPD - Oracle)
-Mientras RLS adopta una postura declarativa estandarizada para solucionar el aislamiento de contexto, el espectro corporativo superior gobernado masivamente por infraestructuras de Oracle Database implementó una arquitectura FGAC colosal que domina la ciberseguridad industrial: la **Base de Datos Privada Virtual (Virtual Private Database, VPD)**49.  
-VPD disgrega y eleva exponencialmente el paradigma infundiendo lógica programática avanzada directamente al comportamiento inyectivo. A diferencia del RLS estático, una política VPD delega el control procesal vinculando la tabla protegida al núcleo administrador global de recursos mediante la instalación de un paquete PL/SQL maestro denominado DBMS_RLS.  
-Esta política se cimenta sobre la creación y acoplamiento de "funciones generadoras de predicados". Cuando un cliente intenta un acceso a un activo bajo vigilancia VPD, la plataforma invoca de manera anticipada la función PL/SQL asignada. Esta función despliega su lógica interna evaluando la identidad, el contexto paramétrico de la aplicación web, o rangos de geolocalización IP; tras efectuar el cálculo, la subrutina retorna algorítmicamente una secuencia de texto (un valor de tipo VARCHAR2) contentivo del predicado condicional estricto que se requiera para el evento. El núcleo del SGBD incrusta sigilosamente dicho fragmento transitorio agregando el WHERE generado directamente en la matriz de la sentencia original del usuario, sin evidenciar en ningún momento la modificación en la interfaz final.  
-Por ejemplo, si la plataforma infiere que el operador pertenece exclusivamente al estrato de tesorería regional del hemisferio sur, y este mismo emite imprudentemente a la consola la instrucción global SELECT * FROM cuentas;, el engranaje de la política VPD transformará algorítmica y molecularmente la sentencia subyacente para ser procesada verdaderamente como SELECT * FROM cuentas WHERE zona \= 'SUR' AND clase \= 'TESORERIA';61.  
-El valor de esta fortificación VPD para infraestructuras militares, bancarias e institucionales se sustenta en tres ventajas insuperables:
 
-1. **Centralización Hermética:** Reubica y arraiga toda concepción de protección profunda desde la dispersión frágil de las APIs frontales y microservicios hacia la robustez infalible del SGBD puro.  
-2. **Omnipresencia y Evasión Cero:** Al materializarse la mutación de la consulta en las cavernas mismas del analizador del SQL (el Parser engine), ni siquiera el uso de herramientas genéricas de escaneo, clientes remotos ODBC directos ni usuarios administradores locales despistados pueden eludir el asedio a los datos de forma colateral ("No back doors").  
-3. **Consolidación Estructural:** Otorga la asombrosa agilidad de concentrar información masiva sensible e inmiscible de decenas de macroempresas rivales compartiendo el mismo espacio de un esquema unificado, ahorrando colosales desembolsos de licencias de hardware y mantenimiento que implicaría la separación física o *sharding* exhaustivo de silos de datos.
+En el entorno de Oracle Database, FGAC se implementa de forma altamente flexible a través de la **Base de Datos Privada Virtual (VPD)**, administrada mediante el paquete de sistema `DBMS_RLS`.
+
+#### Funcionamiento de VPD:
+A diferencia del RLS estático, VPD asocia la tabla a **funciones generadoras de predicados** escritas en PL/SQL:
+1. Cuando se consulta la tabla, el motor ejecuta primero la función PL/SQL.
+2. Esta función analiza el contexto del usuario (IP, rol, región) y devuelve dinámicamente un predicado en forma de cadena de texto (ej. `'zona = SUR'`).
+3. El DBMS añade este predicado a la cláusula `WHERE` del usuario.
+
+* *Ejemplo:* Si un cajero del sur escribe `SELECT * FROM cuentas;`, VPD la reescribe internamente como:
+  ```sql
+  SELECT * FROM cuentas WHERE zona = 'SUR' AND clase = 'TESORERIA';
+  ```
+
+#### Ventajas de VPD:
+1. **Centralización Hermética:** La lógica de seguridad reside exclusivamente en la base de datos, no en las APIs ni en el frontend.
+2. **Omnipresencia y Evasión Cero:** Al operar en el compilador de SQL (*parser*), ningún acceso directo (vía ODBC o herramientas de administración) puede eludir la seguridad.
+3. **Consolidación Estructural:** Permite almacenar información de empresas rivales en el mismo esquema lógico sin riesgo de fuga de datos, evitando crear particiones físicas o instancias independientes (*sharding*).

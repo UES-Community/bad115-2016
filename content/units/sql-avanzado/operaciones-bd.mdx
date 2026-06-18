@@ -14,32 +14,42 @@ sandbox:
   dataset: universidad
 ---
 
-El diseño del estándar ANSI SQL segmenta su espectro operativo en múltiples sublenguajes con propósitos específicos, interactuando con las capas subyacentes del RDBMS que gestionan la persistencia, el aislamiento concurrente y la seguridad.
+El diseño del estándar ANSI SQL segmenta su espectro operativo en múltiples sublenguajes con propósitos específicos, interactuando con las capas del RDBMS que gestionan la persistencia, la concurrencia y la seguridad.
 
+---
 
-El Data Manipulation Language (DML) congrega los comandos imperativos responsables del acceso y alteración de la información residente en las tablas, excluyendo modificaciones estructurales. Se articula a través de las operaciones de recuperación (SELECT), inserción (INSERT), modificación (UPDATE), y eliminación (DELETE). Debido a la naturaleza concurrente de las bases de datos transaccionales, estas operaciones no ocurren de manera aislada; se encuentran fuertemente gobernadas por el Lenguaje de Control de Transacciones (TCL), el cual asegura el cumplimiento de las propiedades de atomicidad, consistencia, aislamiento y durabilidad (ACID) mediante los comandos COMMIT (confirmación definitiva) y ROLLBACK (reversión total a un estado íntegro).  
-La interacción sinérgica entre DML y TCL es crucial para prevenir anomalías de concurrencia cuando múltiples sesiones alteran datos simultáneamente. Sin un control riguroso, surgen problemas críticos definidos formalmente como:
+### Control Transaccional (TCL) y Anomalías de Concurrencia
 
-* **Lectura no repetible (Non-Repeatable Read):** Ocurre cuando una transacción consulta una fila específica varias veces, pero percibe resultados distintos debido a que una transacción ajena ha interceptado y modificado (mediante un UPDATE confirmado) dichos registros entre las lecturas.  
-* **Lectura fantasma (Phantom Read):** A diferencia de la alteración de un registro, este fenómeno transcurre cuando una transacción emite repetidamente un comando con una cláusula WHERE sobre un rango, encontrando en evaluaciones subsecuentes nuevas filas inyectadas (vía INSERT) o ausentes (vía DELETE) por la acción de otra transacción ejecutada en paralelo.
+El **DML** (acceso y modificación de registros) opera bajo el control de transacciones gobernadas por el **TCL (Transaction Control Language)**. TCL asegura el cumplimiento de las propiedades **ACID** mediante los comandos `COMMIT` (confirmación definitiva) y `ROLLBACK` (reversión total).
 
-### Arquitectura Comparada: DELETE vs. TRUNCATE
-Una faceta analítica indispensable dentro de las operaciones de la base de datos es la profunda divergencia arquitectónica existente entre el borrado transaccional de datos (DELETE) y el truncamiento masivo (TRUNCATE TABLE). Aunque funcionalmente ambos buscan el vaciado de información, su ejecución subyacente impacta el rendimiento y la integridad de modos drásticamente opuestos.
+Cuando múltiples transacciones se ejecutan en paralelo sin el aislamiento adecuado, surgen anomalías de concurrencia críticas:
+* **Lectura no Repetible (Non-Repeatable Read):** Ocurre cuando una transacción consulta una fila específica varias veces y obtiene valores distintos en lecturas sucesivas, debido a que otra transacción modificó (`UPDATE`) y confirmó ese registro en el intermedio.
+* **Lectura Fantasma (Phantom Read):** Sucede cuando una transacción realiza consultas basadas en un rango de valores (cláusula `WHERE`) y encuentra filas nuevas (`INSERT`) o faltantes (`DELETE`) inyectadas por otra transacción paralela confirmada durante el proceso.
+
+---
+
+### DELETE vs. TRUNCATE: Comparación Arquitectónica
+
+Aunque ambas operaciones eliminan los registros de una tabla, su ejecución interna difiere radicalmente en rendimiento e impacto del sistema:
 
 | Característica Técnica | Operación DELETE | Operación TRUNCATE |
-| :---- | :---- | :---- |
-| **Clasificación del Lenguaje** | Exclusivamente DML (Lenguaje de Manipulación de Datos). | DDL (Lenguaje de Definición de Datos) o DML híbrido, según la dialéctica del motor. |
-| **Mecanismo de Ejecución Lógica** | Remoción secuencial, ejecutada y evaluada fila por fila, interceptando posibles condicionantes y activando triggers de borrado. | Desasignación masiva y directa de los bloques o páginas físicas de memoria vinculadas a la tabla. |
-| **Sobrecarga de Registro (Logging)** | Operación totalmente registrada (Fully Logged). Se escribe información en los "undo logs" por cada fila extirpada para permitir una reversión atómica pormenorizada. | Operación mínimamente registrada (Minimally Logged). Solamente se registra en el log de transacciones el evento de desasignación de las páginas, no los datos destruidos. |
-| **Condicionamiento Analítico** | Estructura flexible. Admite la directiva WHERE para restringir el alcance de la destrucción a subconjuntos de datos. | Ejecución totalitaria. Prohíbe inherentemente el uso de filtros lógicos, arrasando con la extensión íntegra de la estructura. |
-| **Rendimiento Computacional** | Costoso en términos de I/O y procesamiento de CPU sobre tablas hiper-dimensionadas. | Ejecución asintóticamente constante y casi instantánea, liberando el espacio de manera inmediata sin importar la volumetría de la tabla. |
-| **Reinicio de Metadatos de Identidad** | Mantiene inalteradas las semillas de secuencia lógica o contadores autoincrementales. | Reinicializa imperativamente los contadores de las columnas de identidad a su estado de creación. |
-| **Integridad Referencial de Restricciones** | Tolerante con llaves foráneas. Permite la operación si el borrado no colisiona con restricciones referenciales dependientes. | Incompatible con referencias foráneas forzadas. Si otras tablas apuntan a la tabla objetivo mediante *Foreign Keys*, el motor bloqueará sistemáticamente la ejecución hasta la remoción de la restricción. |
+| :--- | :--- | :--- |
+| **Clasificación** | DML (Manipulación de Datos). | DDL (Definición de Datos) / DML híbrido. |
+| **Mecanismo Físico** | Eliminación secuencial fila por fila, validando restricciones y activando triggers de borrado. | Desasignación masiva de las páginas físicas de memoria vinculadas a la tabla. |
+| **Logging (Registro)** | Totalmente registrado (*Fully Logged*). Escribe en el log por cada fila eliminada para permitir `ROLLBACK`. | Mínimamente registrado (*Minimally Logged*). Solo logea la desasignación de páginas, no las tuplas eliminadas. |
+| **Condicionamiento** | Permite filtrar filas específicas usando la cláusula `WHERE`. | Vaciado total. No admite filtros lógicos (`WHERE`). |
+| **Rendimiento** | Costo computacional alto ($O(N)$) y lento en tablas hiper-dimensionadas. | Casi instantáneo e independiente del volumen ($O(1)$). |
+| **Autoincrementales** | Mantiene las semillas de secuencias y contadores de identidad intactos. | Reinicia los contadores de las columnas de identidad a su valor original. |
+| **Compatibilidad FK** | Ejecuta el borrado si no viola restricciones de Claves Foráneas de tablas dependientes. | Bloquea la operación sistemáticamente si otras tablas referencian la tabla objetivo vía FK. |
 
-Existe un mito extendido en la ingeniería de bases de datos que afirma que la sentencia TRUNCATE no es reversible bajo ninguna circunstancia. El escrutinio de arquitecturas modernas (como SQL Server y PostgreSQL) desmiente este postulado: si una operación TRUNCATE se invoca estando explícitamente confinada dentro de un bloque BEGIN TRANSACTION, la operación puede someterse exitosamente a un comando ROLLBACK. Esto es posible porque, aunque no se logea cada fila, la acción de desasignar las páginas sí es un evento atómico registrado en la bitácora transaccional, y el motor simplemente cancela dicha desasignación restituyendo los apuntadores físicos originales.
+> [!TIP]  
+> **¿Es reversible TRUNCATE?** Contrario al mito común, `TRUNCATE` sí puede ser revertido con un `ROLLBACK` si se ejecuta explícitamente dentro de una transacción activa (`BEGIN TRANSACTION`) en motores como PostgreSQL y SQL Server. El motor no almacena las filas eliminadas, pero sí registra el evento de desasignación de bloques físicos en el log de transacciones, permitiendo restaurar los punteros originales ante un fallo.
+
+---
 
 ### Lenguaje de Control de Datos (DCL)
-La seguridad e indemnidad de las operaciones descritas se encuentra supeditada al Data Control Language (DCL). El DCL orquesta la red de privilegios del sistema, habilitando a los perfiles de administración para expedir autorizaciones (GRANT) o revocar concesiones (REVOKE). A través de este lenguaje se delimitan los roles funcionales, asegurando un entorno de "menor privilegio", en el cual los usuarios únicamente poseen potestad para interrogar o mutar las entidades que sus atribuciones formales dictan.
+
+La seguridad de las operaciones es regulada por el **DCL (Data Control Language)**. DCL permite conceder (`GRANT`) o retirar (`REVOKE`) privilegios en un modelo de menor privilegio, limitando el acceso de los usuarios a las operaciones y objetos estrictamente requeridos.
 
 ## Practica guiada
 

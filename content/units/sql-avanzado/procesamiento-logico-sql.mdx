@@ -11,21 +11,34 @@ references:
   - unidad-2-ref-02
 ---
 
-El Lenguaje de Consulta Estructurado (SQL) difiere epistemológicamente de los lenguajes de programación imperativos tradicionales. Opera bajo un paradigma declarativo, en el cual el desarrollador circunscribe exclusivamente el "qué" —la definición del conjunto de resultados esperados y sus restricciones normativas— delegando al optimizador heurístico del motor de base de datos la responsabilidad absoluta sobre el "cómo", es decir, la formulación del plan de ejecución físico óptimo.  
-Sin embargo, el dominio analítico de SQL requiere inexcusablemente diferenciar entre tres cronologías operativas: el *Orden Sintáctico*, el *Orden Lógico de Procesamiento*, y el *Orden de Procesamiento Físico*24. El orden sintáctico refiere a la secuencia codificada obligatoria para la validez gramatical (comenzando históricamente por la instrucción SELECT). El orden físico es dictaminado caprichosamente por el optimizador de consultas basado en índices, particiones y estadísticas, alterando los pasos para minimizar el uso de I/O. No obstante, es el Orden Lógico de Procesamiento el mapa conceptual determinista dictado por el estándar ANSI SQL que define paso a paso cómo se analizan los datos y cómo las tablas virtuales transitorias son creadas y transferidas de una fase a la siguiente.
+El Lenguaje de Consulta Estructurado (SQL) opera bajo un paradigma declarativo: el desarrollador especifica el **"qué"** (el resultado deseado) y delega al optimizador del DBMS el **"cómo"** (el plan de ejecución físico).
 
+Para dominar SQL, es crucial distinguir entre tres cronologías:
+1. **Orden Sintáctico:** La secuencia gramatical requerida al escribir la consulta (inicia con `SELECT`).
+2. **Orden Lógico:** El orden en el que el motor de base de datos procesa conceptualmente la consulta (dictado por el estándar ANSI SQL).
+3. **Orden Físico:** La secuencia real de ejecución decidida por el optimizador (usando índices, estadísticas, etc.) para minimizar el I/O.
 
-La evaluación lógica de una instrucción SQL avanza mediante fases rigurosas, donde cada fase consume la tabla virtual (VT) producida por el paso anterior. El análisis del motor de SQL Server, por ejemplo, sigue un patrón universalmente representativo de doce pasos:
+---
 
-1. **FROM / ON / JOIN:** La ejecución lógica inicia delimitando el espacio de trabajo. Se calculan los productos cartesianos iniciales y se aplican inmediatamente las restricciones de la cláusula ON, descartando las combinaciones irrelevantes para conformar la tabla virtual primigenia.  
-2. **WHERE:** Esta fase intercepta la tabla virtual proveniente de los orígenes y aplica un filtro condicional de evaluación por fila. Las tuplas cuyo predicado lógico devuelva falso o un estado desconocido (derivado de la lógica ternaria de los valores NULL) son obliteradas del flujo de procesamiento.  
-3. **GROUP BY:** Las tuplas sobrevivientes son particionadas y colapsadas en grupos discretos basados en la unicidad de las expresiones o columnas declaradas. Esta operación altera permanentemente el esquema de la tabla virtual: a partir de esta fase, cualquier columna referenciada que no figure en la llave de agrupación debe ser encapsulada obligatoriamente en funciones matemáticas de agregación.  
-4. **WITH CUBE / ROLLUP:** (Fase específica de análisis multidimensional) Se generan supergrupos y subtotales analíticos inyectando filas de resumen en el conjunto de resultados agrupados.  
-5. **HAVING:** Mientras que WHERE elimina registros atómicos de manera previa, HAVING actúa como un segundo umbral de filtrado orientado exclusivamente a los grupos formados. En esta etapa se evalúan predicados que frecuentemente contienen métricas agregadas (e.g., SUM(Ventas) \> 50), purgando particiones enteras.  
-6. **SELECT:** Aunque es sintácticamente la primera palabra codificada, el proyector de datos se ejecuta tardíamente en la sexta posición. Recién en este instante se resuelven las expresiones matemáticas de la proyección, se seleccionan los atributos requeridos y, fundamentalmente, se materializan los alias de columnas.  
-7. **Evaluación de Funciones de Ventana (Window Functions):** Las funciones analíticas OVER() se procesan sobre la tabla virtual generada por el SELECT, tomando el conjunto casi final y aplicando cálculos de rangos, filas o agregaciones desplazadas (como ROW_NUMBER() o RANK()).  
-8. **DISTINCT:** Se efectúa un barrido algorítmico post-proyección para identificar y erradicar las filas redundantes, garantizando el cumplimiento de la teoría de conjuntos del álgebra relacional.  
-9. **ORDER BY:** El conjunto de datos, ahora con su esquema y volumen final, es sometido a un algoritmo de clasificación direccional (ascendente o descendente). Esta es la única cláusula estándar autorizada para consumir directamente los alias de columnas creados en el paso de SELECT, ya que es lógicamente sucesiva a este.  
-10. **OFFSET / FETCH / TOP / LIMIT:** Por último, el cursor de resultados se trunca devolviendo exclusivamente la cantidad física de registros solicitados, facilitando arquitecturas de paginación o extracción de la cúspide de datos rankeados.
+### Orden Lógico de Procesamiento
 
-Comprender esta secuencia elimina ambigüedades técnicas habituales. Explica categóricamente por qué un desarrollador no puede filtrar en la cláusula WHERE referenciando una métrica matemática o una función de ventana calculada en la declaración SELECT: el analizador gramatical de la base de datos simplemente desconoce la existencia de dichos campos durante la fase dos, puesto que no han sido concebidos computacionalmente sino hasta la fase seis. Para sortear esta estricta secuenciación jerárquica y filtrar por rangos calculados dinámicamente, se hace mandatorio el uso de Expresiones de Tabla Comunes (CTE) o tablas derivadas (subconsultas), las cuales fuerzan al motor a procesar un ciclo lógico íntegro y cristalizar sus resultados como una tabla base susceptible de ser filtrada en un ciclo externo subsecuente.
+El orden lógico define cómo se analizan los datos y cómo las tablas virtuales transitorias (VT) se transfieren de una fase a la siguiente. A continuación se detallan las fases en su secuencia lógica real:
+
+1. **FROM / ON / JOIN:** Delimita el espacio de trabajo. Se calculan los productos cartesianos y se aplican las condiciones `ON`, generando la primera tabla virtual.
+2. **WHERE:** Aplica un filtro por fila sobre la tabla virtual previa. Las tuplas cuya condición sea falsa o devuelva `NULL` (lógica ternaria) son descartadas.
+3. **GROUP BY:** Agrupa las filas según las columnas declaradas. A partir de aquí, las columnas que no formen parte de la clave de agrupación deben encapsularse obligatoriamente en funciones de agregación (como `SUM`, `AVG`, `COUNT`).
+4. **WITH CUBE / ROLLUP:** Genera subtotales analíticos y supergrupos de resumen.
+5. **HAVING:** Filtro exclusivo para los grupos generados en la fase 3 (ej. `HAVING SUM(ventas) > 50`).
+6. **SELECT:** Se ejecuta la proyección, seleccionando las columnas deseadas y evaluando las expresiones matemáticas. Aquí es donde se crean y reconocen los alias de columnas.
+7. **Window Functions (Funciones de Ventana):** Se evalúan las funciones analíticas con `OVER()` (como `ROW_NUMBER()` o `RANK()`) sobre el resultado del `SELECT`.
+8. **DISTINCT:** Elimina filas duplicadas para cumplir con la teoría de conjuntos.
+9. **ORDER BY:** Clasifica el conjunto final de datos (ascendente o descendente). Es la única cláusula que puede referenciar alias definidos en el `SELECT` debido a su orden sucesivo.
+10. **OFFSET / FETCH / TOP / LIMIT:** Trunca el conjunto de resultados, devolviendo únicamente la cantidad de registros solicitados (ideal para paginación).
+
+---
+
+### Implicaciones Prácticas
+
+Comprender esta secuencia elimina errores comunes. Por ejemplo:
+* **¿Por qué no se puede usar un alias del `SELECT` en el `WHERE`?** Porque el `WHERE` (Fase 2) se procesa mucho antes que el `SELECT` (Fase 6). El motor aún no conoce el alias.
+* **¿Cómo filtrar por campos calculados dinámicamente?** Se debe encapsular la lógica en una Expresión de Tabla Común (CTE) o en una subconsulta para forjar una tabla intermedia que sí pueda ser evaluada en el ciclo externo.

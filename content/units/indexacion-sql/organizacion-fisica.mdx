@@ -2,7 +2,7 @@
 title: "Organización Física: Heaps, Agrupamientos y la Amplificación de Escritura (MVCC)"
 slug: organizacion-fisica
 unit: indexacion-sql
-summary: La decisión de cómo se disponen físicamente los datos crudos en las celdas de memoria del disco magnético o la unidad de estado sólido enge…
+summary: La forma en que los datos se ordenan físicamente en el almacenamiento determina el rendimiento de las lecturas y el costo de escritura.
 order: 4
 references:
   - silberschatz-2019
@@ -11,34 +11,79 @@ references:
   - unidad-4-ref-04
 ---
 
-La decisión de cómo se disponen físicamente los datos crudos en las celdas de memoria del disco magnético o la unidad de estado sólido engendra profundas divergencias arquitectónicas, impactando no solo a la velocidad de lectura, sino imponiendo castigos ineludibles sobre la concurrencia y la amplificación de escrituras. Existen ramificaciones estructurales claramente marcadas entre los grandes competidores (SQL Server, Oracle, PostgreSQL y MySQL).
+La disposición física de los datos crudos en el almacenamiento (HDD/SSD) define el rendimiento de las operaciones de lectura, escritura y concurrencia. Cada motor de base de datos (PostgreSQL, MySQL, SQL Server, Oracle) adopta filosofías arquitectónicas distintas para abordar este desafío.
 
+---
 
-En el léxico imperante promovido por Microsoft SQL Server, la taxonomía de organización estructural se divide en dos espectros: Índices Agrupados (Clustered) e Índices No Agrupados (Nonclustered).  
-Un **Índice Agrupado (Clustered Index)** altera de forma forzosa y definitiva la distribución física en la que las filas se almacenan en las entrañas del disco duro. En un índice agrupado, el último peldaño de la estructura del Árbol B+ (el nivel hoja) no contiene simples punteros, sino que en su interior radican de forma nativa las propias filas de datos reales de la tabla con todos sus campos íntegros. Bajo el principio irrefutable de que los datos físicos de un fichero solo pueden someterse a una y solo una ordenación secuencial dentro del medio de almacenamiento a la vez, se desprende la regla cardinal: **una tabla solo puede estar amparada bajo un único índice agrupado**16. Cuando una tabla de base de datos posee un índice agrupado en su arquitectura, se denomina genéricamente *Tabla Agrupada* (Clustered Table). Los motores imponen, por convención y por omisión, que el campo designado como Clave Primaria (Primary Key) adopte el rol central del índice agrupado.  
-Por su contraparte antagónica, si el diseñador de la base de datos opta por no forjar un índice agrupado (dejando la tabla huérfana de orden físico), las tuplas o filas se esparcirán de forma amorfa, apilándose caóticamente en un repositorio conocido estructuralmente como un **Montículo (Heap)**20. En un Heap, los datos no mantienen correlación secuencial; se inyectan despiadadamente en la primera página de memoria física que cuente con suficiente espacio vacante libre, maximizando la velocidad pura de la inserción pero castigando atrozmente los escaneos.  
-El **Índice No Agrupado (Nonclustered Index)** funge como una entidad estructural paralela y desconectada físicamente del archivo madre que alberga la base de datos (análogo estricto al índice trasero de palabras de un volumen literario). Una tabla de SQL Server, por ejemplo, puede tolerar el soporte de hasta 999 índices no agrupados simultáneamente para asistir consultas específicas. En esta infraestructura separada, el estrato de las hojas del árbol abriga el valor de la clave indexada y un vínculo de referencia o puntero hacia el receptáculo original de la fila completa de datos. Este componente de navegación se conoce formalmente como el *Localizador de Fila (Row Locator)*20. La naturaleza anatómica del localizador transmuta dinámicamente según la arquitectura principal de la tabla:
+### Índices Agrupados vs. No Agrupados (SQL Server)
 
-* Si la tabla primigenia subsiste como un **Montículo (Heap)** desordenado, el localizador de fila asume el papel de un puntero físico absoluto, comúnmente llamado Identificador de Fila (RID), el cual traza y encauza al motor hacia el número exacto del bloque de disco, la página y el offset de bytes donde aguarda el dato.  
-* A la inversa, si la tabla madre es una estructura jerárquica de **Tabla Agrupada**, el localizador de fila desecha las referencias físicas al hardware y acoge el valor lógico directo derivado de la clave del índice agrupado original. Esta elección dicta que una operación de búsqueda gatillada sobre el índice no agrupado atravesará su propio Árbol B+ independiente hasta alcanzar el localizador lógico, y obligatoriamente deberá saltar de inmediato para navegar, desde la raíz, por un segundo Árbol B+ entero (el agrupado) para arrancar la fila integral de datos, produciendo latencias leves en consultas amplias.
+Microsoft SQL Server introdujo una taxonomía clara para clasificar la organización física de las tablas:
 
-### Tablas Organizadas por Índice (Oracle) y el Dominio Universal del Montículo en PostgreSQL
-Estas metodologías bifurcan aún más a la industria cuando analizamos a PostgreSQL, Oracle y MySQL.  
-En el ecosistema de Oracle, la tabla agrupada se materializa bajo la jerga de la **Tabla Organizada por Índice (Index-Organized Table - IOT)**29. En una IOT clásica, la tabla base y su árbol de índices primarios convergen matemáticamente para ser la misma criatura biológica. Esta fusión asegura recuperaciones estelares para interrogantes que se asisten primariamente de la clave primaria, ya que la información a extraer reside físicamente co-localizada en los márgenes de los bloques de las hojas. Las IOT de Oracle se recomiendan vehementemente por los ingenieros como el receptáculo ideal para tablas de referencia angostas, entidades vinculantes en las que solucionar relaciones de muchos-a-muchos exige una velocidad prístina. MySQL (mediante su laureado motor de almacenamiento por defecto InnoDB) eleva este concepto a la hegemonía absoluta: en la arquitectura de MySQL InnoDB, la creación y existencia de cualquier tabla impone que sea obligatoria e inquebrantablemente una tabla estructurada mediante un índice agrupado central a su clave primaria. Si un administrador falla deliberadamente o elude definir una clave primaria, el motor sintetizará secretamente un identificador numérico interno (oculto de la vista del usuario) para apalancar de forma soterrada la creación física del árbol.  
-En las antípodas de esta filosofía, **PostgreSQL postula una arquitectura universal de Montículos: en PostgreSQL, el 100% de las tablas se construyen intrínsecamente como Montículos (Heaps) sin orden intrínseco, sin conceder ni una sola excepción**30. Dentro de la jurisdicción arquitectónica de PostgreSQL no tiene cabida legal ni técnica la Tabla Organizada por Índice (IOT). Cuando una aplicación lanza un comando INSERT, el dato en crudo se inyecta pasivamente en archivos de disco en desorden. La orden DDL para la Clave Primaria en PostgreSQL se modeliza meramente como un índice secundario externo dotado con una capa restrictiva de unicidad matemática (un árbol B-Tree satélite). De forma obligatoria, los estratos inferiores u hojas de absolutamente la totalidad de los índices erigidos en PostgreSQL anidan un puntero estrictamente físico designado como el Tuple ID (TID), un marcador direccional dual que cifra en su memoria el número del bloque general y la ranura (slot) milimétrica albergada dentro del Heap desordenado donde se anida la fila.  
-Aunque PostgreSQL no incorpora IOTs de forma orgánica o dinámica, provee al desarrollador un mecanismo de contingencia: el comando imperativo CLUSTER. Mediante el comando CLUSTER table_name USING index_name;, PostgreSQL detiene la ejecución general y se enfrasca en reescribir brutalmente, de forma contigua en el hardware, los confines totales del Heap replicando la progresión de orden amparada por un índice. A pesar de los impresionantes dividendos extraídos en búsquedas correlativas de franjas, la orden CLUSTER alberga un defecto terminal: se trata de una metamorfosis física estática, finita y de una sola ejecución. En el milisegundo que el comando concluye y el entorno transaccional recobra el servicio, todo nuevo dato o UPDATE añadido recaerá en el viejo proceder de Heaps anárquicos en las ranuras desocupadas, diluyendo y desmantelando progresivamente las bondades ganadas hasta volver a invocar la pesada reestructuración del comando.
+#### 1. Índice Agrupado (*Clustered Index*)
+Modifica de forma definitiva la organización física de las filas en el disco.
+* **Datos en las Hojas:** El nivel hoja del árbol B+ no contiene punteros, sino las filas de datos reales de la tabla con todos sus campos.
+* **Restricción:** Dado que los archivos en disco solo pueden ordenarse físicamente de una única manera, **solo puede existir un índice agrupado por tabla**.
+* Por defecto, la Clave Primaria (`PRIMARY KEY`) adopte este rol, convirtiendo a la tabla en una *Tabla Agrupada*.
 
-### Impacto de Multiversión y la Catástrofe de la Amplificación de Escritura (PostgreSQL vs. MySQL)
-El problema de fondo más grave del diseño de arquitecturas es que ninguna optimización es gratuita, especialmente tratándose de Índices Secundarios. Un índice secundario encadena fatalmente la agilidad del acceso a la latencia masiva de penalización en los sistemas de carga (OLTP). La regla universal estipula que cada índice nuevo anexo a una tabla recaba dividendos en las búsquedas asimétricas (SELECT), pero impone impuestos severos en los subsistemas DML (INSERT, DELETE y UPDATE). Tras un INSERT en la tabla primaria, el Gestor está coercitivamente obligado a transitar, dislocar y consolidar matemáticamente de manera sincrónica el árbol interno de todos los índices afiliados a dicho esquema, desgastando recursos preciosos de CPU y E/S de discos. Si esto ya presupone un peligro inherente, su peligro aumenta exponencialmente por el factor del Control de Concurrencia Multiversión (MVCC), el engranaje central de los SGBD de nueva generación para conferir transacciones aisladas tipo ACID (permitiendo que operaciones en lectura coexistan con masivas sobreescrituras en vivo). Al cruzar el Rubicón de la indexación intensiva, emerge la catástrofe de la **Amplificación de Escritura**26.  
-La amplificación de escritura se cataloga en la jerga de ingeniería como el desproporcionado peaje físico y latente a pagar sobre los discos duro en cascada que se deriva algorítmicamente del mandato lógico simple de un solo usuario intentando mutar datos. En este terreno bélico, existe un contraste paradigmático y abismal entre los dogmas de diseño estructural empotrados dentro del núcleo de PostgreSQL y la lógica de MySQL (motor InnoDB).  
-En el núcleo duro de **PostgreSQL**, MVCC impera sobre una metodología inmutable de apéndice (Append-only Heap). Si se invoca el comando de sobreescritura UPDATE modificando la edad de un cliente particular, PostgreSQL tiene una directiva estricta de abstención: *jamás debe mutar el byte orgánico original dentro de las celdas*32. En su lugar, clona el registro al completo (tupla), inyecta los nuevos factores de edad al clon, engasta la tupla flamante como inserción virgen en una ranura inexplorada del Heap, e invoca sobre el bloque original un precinto criptográfico y lógico de "tumba" (para que futuros lectores la desechen). Este acto acarrea una sentencia colateral destructiva: debido a que los índices en PostgreSQL ostentan vínculos hacia direcciones absolutas de espacio físico (TIDs de páginas del disco), **esta alteración en el registro empuja compulsivamente al motor PostgreSQL a atravesar cada índice asociado y reescribirles nuevas direcciones para todos ellos sin falta, aun para los índices de las columnas no afectadas durante la orden de UPDATE**32. Si se muta simplemente el "Nombre", el índice del "Salario" y el índice de "DNI" de todos modos acarrean pesadas modificaciones de hardware. Evaluaciones analíticas determinan empíricamente que en plataformas saturadas, la ramificación geométrica y los subproductos de un PostgreSQL altamente indexado propician multiplicadores masivos que derivan en una amplificación nociva con márgenes superiores a las diez veces (10x Write Amplification Penalty), castigando los registros WAL en red y el almacenamiento general si el administrador excede la creación superficial de 5 o más índices en un solo marco de tabla. Afortunadamente, para contrarrestar esta pesadilla, PostgreSQL implementó un mitigador interno algorítmico designado como actualizaciones de Montículo Exclusivo, conocido bajo el acrónimo **HOT (Heap-Only Tuple)**34. Si y solo si los valores alterados en la sentencia UPDATE de forma explícita *no* integran ninguna base para índices y la página de bloque que resguardaba a la tupla moribunda posee una vacancia marginal libre en sus rincones sobrantes; PostgreSQL omite notificar y degradar los árboles aledaños. En vez de ello, anuda en silencio el puente referencial de la tumba a la nueva reencarnación local dentro de los corrales del bloque mismo. De suceder, esta panacea disuelve íntegramente la letalidad de los multiplicadores. Pero en operaciones intensas o cargas dispersas con docenas de filtros indexados, la evasión milagrosa del protocolo HOT rara vez encuentra cabida legal.
+#### 2. Montículo (*Heap*)
+Si una tabla no posee un índice agrupado, las filas se almacenan sin un orden físico preestablecido.
+* **Mecánica:** Los nuevos registros se escriben en la primera página que tenga espacio libre disponible.
+* **Ventaja:** La inserción de datos es extremadamente veloz.
+* **Desventaja:** Los escaneos completos (*Table Scans*) son muy ineficientes debido al desorden físico.
 
-| Fenómeno Analizado en la Base de Datos (UPDATE) | PostgreSQL (Infraestructura Universal en Heap) | MySQL (Motor InnoDB sobre Agrupación Central) |
-| :---- | :---- | :---- |
-| **Arquitectura Central** | Tuplas anidadas en Heaps desordenados por defecto. | Índice agrupado regido obligatoriamente por un Árbol B+ basado en la Clave Primaria. |
-| **Modelo Multiversión Operativo (MVCC)** | Clona el registro y lo entierra en un alojamiento físico independiente del disco. | Muta las filas del B+ in-situ, reubicando pasivamente las trazas caducadas a un registro segregado (Undo Log) externo. |
-| **Punteros Retenidos por los Índices Secundarios** | Rastreadores explícitos físicos al offset exacto del hardware o Tuple IDs (TIDs). | Rastreadores conceptuales basados en variables lógicas dependientes derivadas del identificador primario (Clave de Indización Principal). |
-| **Colapso Derivado y Costo en los Índices** | Falla transversal catastrófica en cascada; todos los índices sufren inminentemente mutaciones. | Escudo inherente; tan solo el índice adscrito particularmente a la columna mutada percibe la alteración de trabajo. |
-| **Resultado Computacional Físico de Amplificación de Escritura** | Muy punitivo bajo estrés agresivo (\>10x de impacto geométrico lineal derivado del exceso de múltiples índices combinados). | Altamente benigno y escalable; su impacto físico y coste logístico es ínfimo frente a las variaciones masivas, con escalabilidad predecible. |
+#### 3. Índice No Agrupado (*Nonclustered Index*)
+Es una estructura auxiliar y separada de los datos físicos (similar al índice alfabético al final de un libro).
+* Se pueden definir hasta 999 índices no agrupados por tabla.
+* El nivel hoja de este árbol almacena la clave indexada y un **Localizador de Fila (Row Locator)** que apunta al registro real.
 
-Como atestigua la documentación de comparación y métricas analíticas extraídas de escenarios corporativos (casos documentados de migraciones técnicas a gran escala como Uber), la clarividencia subyacente que reviste la maquinaria acoplada en un clúster MySQL InnoDB reside en que sus satélites secundarios retienen y referencian un apuntador "lógico" a la Clave Primaria en vez de una celda de memoria. Ante cualquier colisión interna, el puente matriz sigue siendo el mismo valor (el ID o número universal del cliente). Si dicho componente matricial o columna de clave primaria permanece hermético a los cambios, el cien por ciento de la constelación secundaria en MySQL prosigue totalmente lícita y funcional eximiendo a la E/S de discos del brutal reprocesamiento transaccional en el árbol. En síntesis, bases fuertemente indexadas y de naturaleza agresiva y de volumen intenso a cambios mutacionales (superior a 100K iteraciones/hora) rinden formidables y estables en MySQL, de igual forma que repositorios relacionales cargados para búsquedas intrincadas de matrices poligonales relucirán la corona al recaer en la agilidad analítica de PostgreSQL.
+La naturaleza del **Row Locator** varía según cómo esté organizada la tabla base:
+* **Si la tabla es un Montículo (Heap):** El localizador es un puntero físico absoluto llamado Identificador de Fila (RID), que contiene el número de archivo, número de página y la ranura (*slot*) del registro.
+* **Si la tabla es Agrupada (Clustered):** El localizador es la clave del índice agrupado (por ejemplo, el ID de la Clave Primaria). Para leer la fila completa, el motor debe hacer una doble búsqueda: primero desciende por el índice no agrupado para obtener la clave, y luego desciende por el índice agrupado para extraer la fila (*Clustered Index Seek*).
+
+---
+
+### Tablas Organizadas por Índice (Oracle / InnoDB) vs. Montículo Universal (PostgreSQL)
+
+#### Oracle e InnoDB (MySQL)
+* **Oracle IOT (Index-Organized Table):** Funde la tabla y el índice primario en una sola estructura física B+. Es ideal para tablas de consulta frecuentes y relaciones muchos a muchos.
+* **MySQL InnoDB:** Exige obligatoriamente que toda tabla sea agrupada por su Clave Primaria. Si no se define una, InnoDB creará un identificador numérico interno oculto de 6 bytes (`RowID`) para forzar la creación física del árbol B+.
+
+#### PostgreSQL (Montículo Universal)
+* En PostgreSQL, **todas las tablas son Montículos (Heaps) sin orden físico intrínseco**.
+* La Clave Primaria se implementa como un índice B-Tree secundario externo con una restricción de unicidad.
+* Las hojas de todos los índices de PostgreSQL almacenan un puntero puramente físico: el **Tuple ID (TID)** (compuesto por el número de bloque de disco y la ranura).
+
+<Callout type="warning">
+**El comando CLUSTER en PostgreSQL:** Permite reordenar físicamente el Heap basándose en un índice específico. Sin embargo, esta operación es **estática**: en cuanto se inserten o actualicen nuevos datos, estos volverán a escribirse de manera desordenada en el Heap, perdiendo progresivamente el orden físico del cluster.
+</Callout>
+
+---
+
+### MVCC y la Amplificación de Escritura (*Write Amplification*)
+
+El Control de Concurrencia Multiversión (MVCC) permite que las lecturas y escrituras ocurran de forma concurrente sin bloquearse entre sí. Sin embargo, su implementación física difiere drásticamente entre motores y tiene un gran impacto en el rendimiento:
+
+#### La Catástrofe de la Amplificación de Escritura en PostgreSQL
+
+PostgreSQL implementa MVCC mediante una arquitectura de solo adición (*Append-only Heap*):
+1. Al realizar un `UPDATE`, el motor **no modifica** el registro existente.
+2. En su lugar, clona la fila, aplica el cambio y escribe la nueva versión (tupla) en una ubicación libre del Heap. La fila vieja se marca como "muerta" mediante visibilidad lógica.
+3. Debido a que las hojas de los índices apuntan a direcciones físicas absolutas (TIDs), **este cambio de ubicación obliga a PostgreSQL a actualizar todos los índices de la tabla**, incluso si las columnas indexadas no fueron modificadas por el `UPDATE`.
+4. En tablas muy indexadas, esto causa una severa amplificación de escritura en disco.
+
+* **Mitigación - HOT (Heap-Only Tuple):** Si el `UPDATE` no modifica ninguna columna indexada y la nueva versión de la fila cabe en la misma página de datos del Heap que la versión antigua, PostgreSQL evita actualizar los índices. En su lugar, crea un puntero interno directo dentro de la misma página.
+
+#### El Enfoque de MySQL InnoDB
+
+MySQL InnoDB gestiona MVCC de manera diferente:
+1. Las modificaciones se realizan **in-situ** sobre el índice agrupado.
+2. Las versiones antiguas de los registros se extraen y se envían a un archivo separado de reversión llamado **Undo Log**.
+3. Debido a que los índices secundarios de InnoDB apuntan lógicamente a la Clave Primaria (no a la dirección física del disco), **los índices secundarios no necesitan actualizarse ante un UPDATE**, a menos que la columna que componen haya sido explícitamente modificada.
+
+| Característica de Operación | PostgreSQL (Arquitectura Heap) | MySQL InnoDB (Índice Agrupado) |
+| :--- | :--- | :--- |
+| **Estructura por Defecto** | Montículo desordenado (Heap). | Índice agrupado (B+ Tree por Clave Primaria). |
+| **Modelo MVCC** | Multi-versión física en el Heap (se duplica la tupla). | Modificación in-situ; versiones antiguas en el *Undo Log*. |
+| **Referencia en Índice Secundario** | Dirección física absoluta (TID: Bloque, ranura). | Clave Primaria lógica (ID del registro). |
+| **Costo de un UPDATE** | Alto: Puede requerir actualizar todos los índices (salvo optimización HOT). | Bajo: Solo actualiza los índices cuyas columnas cambiaron. |
+| **Amplificación de Escritura** | Muy alta ante múltiples índices. | Moderada y predecible. |

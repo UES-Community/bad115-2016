@@ -2,7 +2,7 @@
 title: "Consultas y Transformaciones XML: XPath, XQuery y XSLT"
 slug: xpath-xquery-xslt
 unit: xml-datos
-summary: La naturaleza fuertemente tipada y jerárquica del XML desafía la lógica de recuperación de datos plana característica de lenguajes como SQL.
+summary: Para recuperar y transformar datos jerárquicos en XML, el W3C definió tres tecnologías clave basadas en el modelo de datos XDM: XPath, XQuery y XSLT.
 order: 2
 references:
   - silberschatz-2019
@@ -11,59 +11,113 @@ references:
   - unidad-5-ref-02
 ---
 
-La naturaleza fuertemente tipada y jerárquica del XML desafía la lógica de recuperación de datos plana característica de lenguajes como SQL. Para aprovechar plenamente los datos semiestructurados persistidos en el paradigma XML, el W3C ha formulado un tríptico de tecnologías estrechamente cohesionadas: XPath (navegación y evaluación), XQuery (extracción de datos a gran escala) y XSLT (transformación y publicación de subárboles). Fundamentalmente, todos operan bajo las definiciones teóricas del modelo de datos XDM (XQuery and XPath Data Model), un andamiaje conceptual subyacente que no percibe el documento como cadenas de caracteres, sino como un conjunto tipado de colecciones interconectadas que abarcan documentos, elementos, atributos, y nodos atómicos primitivos.
+La estructura jerárquica y anidada del XML difiere del modelo plano de bases de datos relacionales. Para interactuar eficientemente con documentos XML, el W3C desarrolló un ecosistema de tecnologías sustentado en el modelo de datos común **XDM (XQuery and XPath Data Model)**, que conceptualiza los documentos como árboles jerárquicos de nodos tipados.
 
+---
 
-XPath es la sintaxis basal y el motor funcional expresivo que permite navegar dinámicamente a través de las topologías de un árbol XML para aislar partes específicas de información. A diferencia de lenguajes más amplios, XPath es un lenguaje de expresiones puros: no puede modificar datos por sí mismo, sino que se incorpora subyacentemente dentro de XSLT, XQuery, e incluso esquemas como Schematron y XSD 1.1, sirviendo como su mecanismo intrínseco de indexación referencial.  
-El núcleo algorítmico de XPath reside en su capacidad para articular secuencias lógicas denominadas "pasos de ubicación" (location steps), que se ejecutan a partir de un "nodo de contexto" (context node) en tiempo real. Cada paso de la ruta consta teóricamente de tres componentes atómicos separados por delimitadores dobles :: y predicados:
+### XPath (XML Path Language)
 
-1. **El Eje (Axis):** Especifica la dirección vectorial o relación arbórea desde el nodo de contexto. Las expresiones XPath se ramifican devolviendo nodos en orden jerárquico del documento (ejes hacia adelante) o en orden jerárquico invertido (ejes hacia atrás).  
-2. **Prueba de Nodo (Node Test):** Filtra los nodos localizados en el eje basándose en su nombre específico (ej., book, section) o su naturaleza principal subyacente mediante comodines referenciales tipados (ej., node(), text(), *).  
-3. **Predicados (Predicates):** Condiciones de filtrado semántico adicionales envueltas en corchetes [] que se evalúan iterativamente de forma booleana contra el resultado emergente del paso. Aceptan funciones nativas de biblioteca, conteos y operadores condicionales combinados de álgebra relacional (and, or, \!=, \<, contains()).
+XPath es el lenguaje de expresiones utilizado para navegar por la estructura de árbol de un documento XML y seleccionar subconjuntos de nodos. Es un lenguaje de consulta puro (no modifica los datos) y sirve de base para XQuery y XSLT.
 
-Para ilustrar este modelo, la expresión de ruta /bookstore/book[price \< 30 and author='Smith']/title recorre estructuralmente la raíz, extrae un subconjunto de nodos book, descarta los libros fuera de la restricción atómica impuesta en el predicado anidado de precio y autor, y devuelve secuencialmente los nodos title sobrevivientes al conjunto final. En la práctica diaria, los programadores utilizan la sintaxis abreviada: prescinden del eje predeterminado child:: asumiéndolo implícito y utilizan el atajo @ en lugar de la definición explícita formal de attribute:: (ej., //book[@ISBN]).
+#### Estructura de un "Paso de Ubicación" (Location Step)
+Cada paso de navegación en XPath consta de tres componentes principales:
+1. **Eje (*Axis*):** Define la dirección de la navegación en el árbol a partir del nodo actual (ej. hijos, descendientes, ancestros).
+2. **Prueba de Nodo (*Node Test*):** Filtra los nodos localizados por el eje según su tipo o nombre (ej. `node()`, `text()`, `*`, o etiquetas específicas como `libro`).
+3. **Predicados (*Predicates*):** Condiciones lógicas escritas entre corchetes `[...]` que filtran los nodos seleccionados. Aceptan operadores lógicos, matemáticos y funciones.
 
-| Eje XPath (Axis) | Semántica de la Relación Topológica | Sintaxis Abreviada Equivalente |
-| :---- | :---- | :---- |
-| child:: | (Dirección Frontal) Selecciona los nodos descendientes directos de primera generación del contexto. | / (Eje predeterminado si se omite) |
-| descendant-or-self:: | (Dirección Frontal) Selecciona el contexto actual más todos sus descendientes en profundidad absoluta. | // |
-| attribute:: | Selecciona exclusivamente los nodos de atributos contenidos léxicamente en el elemento de contexto. | @ |
-| parent:: | (Dirección Trasera) Retorna el nodo padre inmediato sobre el que reside el contexto. | .. |
-| self:: | Apunta estáticamente al nodo de contexto aislado sin desplazar el puntero. | . |
-| following-sibling:: | (Dirección Frontal) Selecciona los nodos hermanos de la misma jerarquía que aparecen estructuralmente después. | Ninguna |
-| ancestor:: | (Dirección Trasera) Recupera recursivamente toda la línea de ascendencia (padre, abuelo, hasta la raíz del documento). | Ninguna |
+```xpath
+-- Ejemplo conceptual de expresión XPath
+/bookstore/book[price < 30 and author='Smith']/title
+```
 
-La especificación XPath ha experimentado un dramático desarrollo evolutivo. XPath 1.0 operaba bajo un paradigma de "conjunto de nodos" (node-sets) que carecía fundamentalmente de tipado escalar, dependiendo de coerciones implícitas (castings automáticos) al operar con valores de texto o números simples. La estandarización de XPath 2.0 en paralelo a XQuery 1.0 revolucionó el lenguaje integrando completamente la conciencia semántica de los esquemas (Schema-Awareness). Introdujo el concepto de secuencias universales, donde los resultados ahora admiten combinaciones heterogéneas de nodos XML primitivos e instancias atómicas tipadas en base a XSD. XPath 2.0 asimiló construcciones típicas de lenguajes de programación estructurados como iteradores explícitos (for loops), controles de flujo ramificados condicionales (if/then/else), aserciones lógicas complejas cuantificadas (some / every), e interacciones mediante identificadores URI en los espacios de nombres. Iteraciones subsiguientes como XPath 3.0 y 3.1 extendieron aún más estas capacidades formales, integrando un vasto catálogo de expresiones analíticas avanzadas, soportando estructuras de datos anidadas y mapeo JSON, y sirviendo de soporte al nuevo modelo ampliado de las recomendaciones W3C.
+#### Ejes Principales de XPath y sus Abreviaciones
+
+| Eje XPath (*Axis*) | Dirección y Semántica de Navegación | Sintaxis Abreviada |
+| :--- | :--- | :--- |
+| `child::` | Selecciona los nodos hijo directos del nodo de contexto. | `/` (o se omite) |
+| `descendant-or-self::` | Selecciona el nodo actual y todos sus descendientes en profundidad. | `//` |
+| `attribute::` | Selecciona los atributos del elemento actual. | `@` |
+| `parent::` | Selecciona el padre inmediato del nodo actual. | `..` |
+| `self::` | Selecciona el nodo actual. | `.` |
+| `following-sibling::` | Selecciona los nodos del mismo nivel (hermanos) posteriores al actual. | *No tiene* |
+| `ancestor::` | Selecciona la línea completa de ancestros del nodo (padre, abuelo, raíz). | *No tiene* |
+
+#### Evolución del Estándar
+* **XPath 1.0:** Operaba con "conjuntos de nodos" sin tipado estricto, dependiendo de conversiones implícitas de tipos.
+* **XPath 2.0 / 3.0 / 3.1:** Incorporó el sistema de tipos de XSD (*Schema-Awareness*), soporte para secuencias homogéneas y heterogéneas, iteradores (`for`), expresiones condicionales (`if-then-else`), aserciones cuantificadas (`some`/`every`), mapeo JSON y soporte avanzado de funciones.
+
+---
 
 ### XQuery (XML Query Language)
-Para escenarios analíticos empresariales, integraciones corporativas y recuperación masiva de metadatos persistidos en bases de datos NXD, las funcionalidades de XPath aisladas resultaban ineficaces. XQuery fue proyectado y estandarizado explícitamente como la piedra angular programática de interrogación de bases de datos XML, comportándose de manera funcionalmente equivalente al estándar SQL relacional pero enfocado en el modelo XDM jerárquico tipado.  
-XQuery está sustentado estructuralmente en XPath 2.0 (siendo superset de este, toda expresión XPath válida es invariablemente una expresión XQuery válida). Sin embargo, la ventaja operativa de XQuery radica en que introduce un potente sistema modular declarativo que permite construir funciones definidas por el usuario (declare function local:process()), tipificar obligatoriamente sus argumentos operacionales contra especificaciones XSD subyacentes, y, sobre todo, instanciar flujos dinámicos complejos mediante la expresión central FLWOR.  
-La expresión iterativa FLWOR (acrónimo fonético de sus cláusulas "flower") rige la sintaxis analítica de XQuery para gestionar cruces (joins), manipulaciones de listas de secuencias, agrupaciones lógicas y proyecciones de reconstrucción XML:
 
-* **for:** Inicia bucles explícitos que enlazan ("bind") una variable instanciada a cada uno de los ítems atómicos o nodos retornados por una secuencia de XPath. Su capacidad de anidamiento multidimensional (múltiples variables iteradoras for $x in A, $y in B) simula transparentemente los potentes productos cartesianos y "Joins" internos de bases de datos relacionales.  
-* **let:** A diferencia de la bifurcación cíclica de for, la cláusula let fija inmutablemente una variable estática a la totalidad íntegra de una secuencia evaluada o estructura subyacente, impidiendo su deconstrucción iterativa, lo que optimiza de forma dramática el desempeño al prevenir recálculos redundantes dentro de ciclos posteriores.  
-* **where:** Ejerce un bloqueo analítico; filtra de forma determinista la salida iterativa sometiendo cada tupla actual del vector a un predicado evaluado como un booleano estricto, operando de manera semánticamente análoga al discriminador relacional WHERE de SQL.  
-* **order by:** Permite ordenar los elementos procesados de la secuencia lógica aplicando expresiones relativas a los metadatos. En conjunción con las normativas locales de idioma, los componentes soportan la manipulación semántica mediante colaciones nombradas (collations), garantizando clasificaciones lexicográficas precisas, aunque la ordenación basada en el punto de código Unicode directo ofrece invariablemente la máxima velocidad de procesamiento del motor.  
-* **return:** Concluye forzosamente el flujo FLWOR construyendo imperativamente el formato final del output resultante para cada iteración validada. Permite incrustar XML directamente en línea (Direct Element Constructors), devolviendo representaciones completamente nuevas.
+XQuery es a los datos semiestructurados en XML lo que SQL es a las tablas relacionales. Es un superconjunto de XPath 2.0 diseñado para extraer información de bases de datos XML (tanto documentos individuales como colecciones complejas).
 
-En la práctica transaccional, XQuery se despliega principalmente desde la línea de comandos contra infraestructuras persistentes usando llamadas como doc() (para apuntar árboles de un documento singleton) o el iterador integral collection() para navegar masivamente en clústeres estructurados del repositorio físico, abstrayendo implementaciones operativas pesadas con elegancia sintáctica.
+#### Expresiones FLWOR
+El núcleo operativo de XQuery es la estructura **FLWOR**, que permite realizar proyecciones, ordenamientos y combinaciones de datos (*joins*):
+
+* **`for`:** Inicia ciclos iterativos que asocian una variable a cada nodo devuelto por una expresión XPath (similar a un bucle `foreach`).
+* **`let`:** Vincula una variable a una secuencia completa como un bloque único, evitando evaluaciones repetitivas dentro de ciclos.
+* **`where`:** Aplica filtros booleanos sobre las variables definidas en `for` o `let` (análogo al `WHERE` de SQL).
+* **`order by`:** Ordena secuencialmente los elementos resultantes antes de retornarlos.
+* **`return`:** Define la salida que se va a construir en cada iteración, permitiendo formatear XML dinámicamente.
+
+```xquery
+(: Ejemplo de consulta FLWOR en XQuery :)
+for $b in doc("libros.xml")/bookstore/book
+where $b/price < 30
+order by $b/title
+return
+  <libro_barato isbn="{$b/@isbn}">
+    {$b/title}
+  </libro_barato>
+```
+
+---
 
 ### XSLT (Extensible Stylesheet Language Transformations)
-Mientras que XQuery brilla en la extracción de conjuntos de bases de datos, XSLT está arquitectónicamente diseñado para transformaciones macroestructurales profundas y la publicación en interfaces múltiples. Aplicando una hoja de estilos contra un documento XML de origen, los motores XSLT pueden reescribir completamente la topología de la fuente para adaptarla instantáneamente a dispositivos móviles, sintetizarla en visualizaciones HTML enriquecidas, filtrarla para representaciones relacionales como CSV, o integrarla al motor paralelo XSL-FO (Formatting Objects) para especificar atributos vectoriales precisos de paginación que culminan en el volcado y renderizado final de documentos PDF.  
-A nivel sintáctico, una hoja de estilos de XSLT está intrínsecamente serializada en XML puro. Esta estructura homóloga a los documentos procesados le otorga capacidades únicas de metaprogramación: las hojas XSLT pueden validar semánticamente sus lógicas incrustadas mediante esquemas externos, e incluso admiten procesos de reflexividad donde un script de transformación muta de manera asíncrona u optimiza código de otro documento XSLT en tiempo real.  
-El motor subyacente de XSLT opera mediante un paradigma declarativo diametralmente opuesto a XQuery; funciona a través de un modelo guiado por el documento (document-driven) y un motor implícito de coincidencia de patrones (Pattern-matching engine) basado en "Reglas de Plantilla"40. El procesador automático recorre el árbol de entrada transversalmente; cuando el contexto dinámico actual halla un nodo coincidente con el predicado estipulado en una directiva \<xsl:template match="..."\>, el procesador interrumpe su escaneo y ejecuta inmediatamente los comandos delineados internamente (variables de alcance lógico, directivas condicionales complejas de flujo mediante \<xsl:choose\>, y bucles controlados mediante funciones de recursividad). Al inyectar delegaciones asíncronas como \<xsl:apply-templates\>, XSLT externaliza las instrucciones para que el motor busque subplantillas para procesar sus correspondientes nodos hijos de manera transparente y desacoplada.  
-Un hito trascendental y revolucionario en la especificación XSLT 2.0 y sus subsiguientes evoluciones estandarizadas (3.0) fue el rediseño conceptual para las lógicas computacionales de agrupación de metadatos (Grouping). Históricamente, en arquitecturas XSLT 1.0, unificar metadatos (como consolidar dinámicamente un bloque unificado que contenga el sumario del total adeudado de todas las facturas aisladas de un cliente específico en el documento principal) exigía la implementación dolorosa e ilegible del denominado "Método Muenchian", el cual requería conjugar declaradores \<xsl:key\> e identificadores globales intrincados y dependientes de comparación iterativa de conjuntos generate-id(). La adopción del elemento analítico \<xsl:for-each-group\> remedió estéticamente este problema introduciendo directivas eficientes:
 
-* **group-by:** Ordena semánticamente y fusiona iteraciones de elementos que compartan estrictamente el mismo valor atómico indexado devuelto por la evaluación interna, eliminando la duplicidad conceptual subyacente y operando transversalmente a través del orden global.  
-* **group-adjacent:** Difiere fundamentalmente al forzar cortes operativos inmediatos tan pronto como la inspección transversal detecta que el identificador subyacente muta respecto al nodo estrictamente precedente. Es ideal para encapsulamiento y uniones tipográficas locales continuas, como la construcción semántica de viñetas gráficas adyacentes \<bullet\> en estructuras Markdown de origen fragmentadas, o aislamientos por segmentación de series erróneas.  
-* **group-starting-with / group-ending-with:** A través de análisis léxico, estas directivas no evalúan ni emparejan metadatos explícitos, sino la ocurrencia misma de ciertos patrones estructurales marcados para encapsular todos los componentes que subyacen adyacentemente hasta que un nodo disparador vuelve a ocurrir; esto provee el soporte definitivo indispensable para generar divisiones en capítulos partiendo del aislamiento de titulares \<h2\> como vectores de inicio contextual ininterrumpido.
+A diferencia de XQuery (orientado a consultas), XSLT está diseñado para la transformación estructural de documentos XML hacia otros formatos como HTML, texto plano (CSV), JSON o documentos PDF (a través de XSL-FO).
 
-Durante el procesamiento encapsulado de estos ciclos de grupos macroestructurales formados, las utilidades matemáticas intrínsecas contextuales como current-group() recuperan transaccionalmente toda la matriz multidimensional contenida dentro de la iteración de control presente. Asimismo, la indexación referencial facilitada por current-grouping-key() aísla de manera limpia la clave responsable del aglutinamiento que desató la regla, promoviendo el cómputo de métricas dinámicas avanzadas y sumarios promedios (avg()) sin necesidad de programación orientada a objetos en un nivel superior del marco funcional de trabajo.
+#### Paradigma Basado en Plantillas
+XSLT es un lenguaje declarativo guiado por el documento (*document-driven*). El procesador recorre el árbol XML y aplica reglas específicas cuando un nodo coincide con un patrón definido en una plantilla:
 
-| Característica de Diseño Sintáctico | XQuery (XML Query) | XSLT (XML Stylesheet Language Transformations) |
-| :---- | :---- | :---- |
-| **Arquitectura Semántica Principal** | Lenguaje programático funcional y modular guiado por consulta estricta (Query-driven). | Sistema declarativo y guiado inherentemente por los metadatos del documento base (Document-driven). |
-| **Formato Lexicográfico** | Sintaxis concisa derivada indirectamente de influencias SQL (Compact Syntax). | Estrictamente validado y construido como XML puro y extenso (Verbose XML syntax). |
-| **Control Transaccional (Bifurcaciones lógicas)** | Utilización nativa y estricta de expresiones evaluativas directas if (Cond) then A else B obligando la existencia de la segunda bifurcación de balance léxico. | Evaluaciones de paso múltiple operadas a través de sub-árboles directivos complejos como \<xsl:choose\>, \<xsl:when\> y \<xsl:otherwise\>42. |
-| **Definición Variables Globales Evaluables** | Imperativos de fijación local con semántica clara mediante la cláusula estructurada let $x := value. | Constructos estáticos extensos invocados global y externamente con \<xsl:variable name="x" select="value"/\> limitando el encapsulamiento paramétrico cruzado. |
-| **Casos de Utilización de Producción Típicos** | Recuperación distribuida y analítica relacional profunda transaccional (NXD databases, orígenes heterogéneos). | Transformaciones de representación hacia múltiples esquemas terminales, traducciones inter-arquitecturas pesadas y migración visual estructural (PDF, HTML). |
+* **`<xsl:template match="...">`:** Define la regla de transformación aplicable a los nodos que coincidan con la expresión XPath.
+* **`<xsl:apply-templates>`:** Delega el procesamiento de los nodos hijo a otras plantillas del documento.
+
+```xml
+<!-- Ejemplo simple de hoja de estilos XSLT -->
+<xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+  <xsl:template match="/">
+    <html>
+      <body>
+        <h2>Lista de Libros</h2>
+        <xsl:apply-templates select="bookstore/book"/>
+      </body>
+    </html>
+  </xsl:template>
+
+  <xsl:template match="book">
+    <p><xsl:value-of select="title"/> - <xsl:value-of select="price"/></p>
+  </xsl:template>
+</xsl:stylesheet>
+```
+
+#### Agrupación en XSLT 2.0 / 3.0 (`<xsl:for-each-group>`)
+La agrupación estructural compleja (que en XSLT 1.0 requería el complejo método *Muenchian* usando funciones `generate-id()`) se simplificó sustancialmente mediante las siguientes directivas:
+
+* **`group-by`:** Agrupa elementos según el valor único de una clave de agrupación común.
+* **`group-adjacent`:** Agrupa elementos contiguos que comparten el mismo valor de clave (ideal para agrupar párrafos u elementos correlativos).
+* **`group-starting-with` / `group-ending-with`:** Agrupa secuencias de nodos basándose en un nodo delimitador inicial o final (como cabeceras `<h2>`).
+* **Funciones de apoyo:** `current-group()` devuelve los nodos agrupados en la iteración actual y `current-grouping-key()` extrae el valor del criterio que generó el grupo.
+
+---
+
+### Comparativa: XQuery vs. XSLT
+
+| Característica | XQuery | XSLT |
+| :--- | :--- | :--- |
+| **Enfoque Principal** | Búsqueda y extracción de datos (*Query-driven*). | Transformación de formato y estructura (*Document-driven*). |
+| **Sintaxis** | Compacta y legible (similar a SQL y lenguajes funcionales). | XML Verboso (todas las etiquetas del script son XML válido). |
+| **Bifurcaciones Lógicas** | Estructuras directas: `if (cond) then A else B`. | Bloques estructurados XML: `<xsl:choose>`, `<xsl:when>`, `<xsl:otherwise>`. |
+| **Asignación de Variables** | Sintaxis ligera: `let $x := valor`. | Elemento XML: `<xsl:variable name="x" select="valor"/>`. |
+| **Caso de Uso Común** | Consultas a bases de datos nativas XML (NXD) y orígenes heterogéneos. | Generación de interfaces web (HTML), reportes (PDF) y mapeo entre esquemas. |

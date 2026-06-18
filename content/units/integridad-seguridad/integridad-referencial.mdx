@@ -14,26 +14,33 @@ sandbox:
   dataset: empleados
 ---
 
-La integridad referencial es el andamiaje algorítmico que preserva las dependencias cardinales descritas en la etapa del diseño de bases de datos, garantizando que el tejido de conexiones lógicas se mantenga inalterado. Este mecanismo se declara mediante la restricción de Clave Foránea (FOREIGN KEY), un precepto que exige que todos los valores albergados en un atributo particular de la tabla dependiente (o tabla "hija") correspondan ineludiblemente a un valor primario o único preexistente en una tabla de referencia (o tabla "padre").  
-El objetivo primordial es erradicar la presencia de registros huérfanos (datos atados a entidades matrices inexistentes) que degradan las uniones SQL (JOIN) y fragmentan la topología de la información.  
-La profundidad operativa de la integridad referencial no se limita a rechazar inserciones anómalas; su verdadero alcance radica en las reglas de comportamiento automatizado que el administrador define para gestionar la supresión (ON DELETE) o alteración (ON UPDATE) de una tupla en la tabla padre que actualmente sustenta ramificaciones en tablas hijas. Las políticas referenciales o *referential actions* principales del estándar SQL son:
+La integridad referencial es el mecanismo lógico que garantiza que las conexiones entre tablas se mantengan consistentes y válidas. Se declara mediante la restricción de **Clave Foránea (FOREIGN KEY)**, obligando a que los valores de una tabla dependiente (hija) existan previamente en la tabla de referencia (padre), lo que previene la aparición de *registros huérfanos* que degraden las consultas (`JOIN`).
 
-1. **CASCADE (En Cascada):** Representa una onda expansiva controlada. Si el registro matriz es eliminado o su clave primaria alterada, el SGBD propaga idéntica acción hacia todos los registros dependientes. Es fundamental en modelos jerárquicos de composición estricta; por ejemplo, al eliminar una factura, sus líneas de artículos asociados en la tabla de detalle se destruyen automáticamente. Si bien simplifica el mantenimiento, un mal diseño puede generar eliminaciones catastróficas imprevistas que arrasen con amplios segmentos de la base de datos.  
-2. **SET NULL:** Aísla el impacto de la eliminación. La fila dependiente sobrevive al evento, pero su vínculo referencial se rompe; el motor de base de datos actualiza el valor de la clave foránea asignándole NULL. Para invocar esta política, la arquitectura de la tabla dependiente debe permitir la existencia de valores NULL en dicho atributo.  
-3. **SET DEFAULT:** Opera bajo el mismo paradigma de aislamiento que SET NULL, pero en su lugar inyecta un valor de resguardo predeterminado (configurado en el esquema DDL de la columna) tras la supresión del padre. Dicho valor predeterminado debe existir previamente como una clave válida en la tabla matriz.
+---
 
+### Acciones Referenciales (ON DELETE / ON UPDATE)
 
-Las directivas de prohibición, diseñadas para cancelar agresivamente la eliminación de un registro maestro si subsisten registros vinculados, han generado profundo debate arquitectónico debido a las marcadas discrepancias en la implementación del estándar SQL a lo largo de los diferentes motores comerciales. Estas acciones son RESTRICT y NO ACTION.  
-El estándar ANSI SQL define a ambas con propósitos similares (el bloqueo de la mutación de la relación), pero con divergencias algorítmicas de temporización supremas:
+Cuando un registro padre se elimina (`DELETE`) o modifica (`UPDATE`), el DBMS puede reaccionar de forma automática según las siguientes políticas:
 
-* **RESTRICT:** Dicta una validación intransigente y punitiva. Cuando se emite un DELETE sobre la tabla padre, el SGBD evalúa *antes* de finalizar la ejecución del comando la existencia de huérfanos. Si detecta uno solo, aborta inmediatamente la instrucción. Por diseño, la acción RESTRICT jamás puede ser diferida o aplazada en la transacción.  
-* **NO ACTION:** Es la configuración por defecto del ecosistema relacional. Sugiere que la acción referencial principal es no tomar ninguna medida correctora automática (como borrar en cascada), sino verificar la violación del precepto referencial de manera natural. Sin embargo, su distinción capital respecto a RESTRICT es que **NO ACTION permite ser diferida**23. Si la restricción es definida como DEFERRABLE, NO ACTION pospondrá el análisis de orfandad hasta el término exacto de la transacción completa, concediendo a la aplicación una ventana de tiempo valiosa para reorganizar las ramas jerárquicas.
+* **CASCADE (En Cascada):** Propaga la misma acción del padre a los registros hijos vinculados (ej. borrar una factura elimina de inmediato todas sus líneas de detalle).
+* **SET NULL:** Rompe el vínculo referencial asignando `NULL` a la clave foránea en la tabla hija. Requiere que la columna hija acepte valores nulos.
+* **SET DEFAULT:** Asigna un valor predeterminado seguro (configurado en el esquema DDL) a la columna hija tras eliminar al padre. Este valor por defecto debe existir previamente en la tabla maestra.
 
-La teoría, sin embargo, a menudo se fragmenta en la práctica comercial:
+---
 
-* **PostgreSQL:** Adopta una obediencia purista al estándar. La divergencia temporal entre diferir un NO ACTION mientras se niega el aplazamiento a un RESTRICT está cabalmente respetada e implementada en su núcleo.  
-* **Microsoft SQL Server y MySQL (InnoDB):** Fusionan ambos conceptos de forma monolítica. Dado que las comprobaciones foráneas no soportan diferimientos nativos temporales asincrónicos, ambas plataformas declaran a NO ACTION como un sinónimo exacto e idéntico de RESTRICT, rechazando cualquier violación instantáneamente y sin distinciones prácticas para el administrador.  
-* **IBM DB:** Aporta una dimensión adicional enfocada en la resolución de colisiones y el orden de ejecución. Un mandato RESTRICT tiene jerarquía absoluta y es procesado antes de cualquier otra regla referencial (incluyendo CASCADE aplicadas sobre otras relaciones). En cambio, NO ACTION se procesa como último eslabón, evaluándose únicamente después de que todas las cascadas y anulaciones (SET NULL) concurrentes de otras restricciones referenciales en la base de datos hayan concluido su curso.
+### RESTRICT vs. NO ACTION: El Dilema de la Temporización
+
+Ambas directivas prohíben eliminar registros maestros si existen registros hijos vinculados, pero difieren fundamentalmente en **cuándo** realizan la validación:
+
+* **RESTRICT:** Validación agresiva e inmediata. Comprueba la existencia de registros huérfanos *antes* de terminar la sentencia. Si detecta uno solo, aborta la instrucción en el acto. No se puede diferir.
+* **NO ACTION:** Comportamiento estándar. Permite que la validación se posponga (si se define la restricción como `DEFERRABLE INITIALLY DEFERRED`) evaluando los huérfanos al finalizar toda la transacción (`COMMIT`). Esto permite realizar modificaciones temporales incompatibles durante la transacción.
+
+#### Comportamiento en Motores Comerciales
+La implementación de estas reglas varía según el motor de base de datos:
+
+* **PostgreSQL:** Adhiere de forma estricta al estándar ANSI SQL, implementando RESTRICT y NO ACTION con su respectiva diferencia de temporización.
+* **SQL Server y MySQL (InnoDB):** No admiten la temporización diferida para claves foráneas. Por lo tanto, tratan a `NO ACTION` y `RESTRICT` de forma idéntica, rechazando las violaciones inmediatamente.
+* **DB2 (IBM):** `RESTRICT` se evalúa antes que cualquier otra regla referencial (incluso que los deletes en cascada), mientras que `NO ACTION` se procesa al final de todo el lote de modificaciones.
 
 ## Practica guiada
 

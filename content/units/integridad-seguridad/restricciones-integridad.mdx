@@ -14,40 +14,49 @@ sandbox:
   dataset: empleados
 ---
 
-Las restricciones (conocidas técnicamente como *constraints*) constituyen la primera y más eficiente línea de defensa lógica dentro del paradigma relacional. Son normativas declarativas, aplicadas en la capa del Lenguaje de Definición de Datos (DDL), que dictaminan las condiciones inquebrantables que todo dato debe cumplir antes de ser escrito en el disco duro. A diferencia de las validaciones implementadas en el código fuente de las aplicaciones cliente —las cuales pueden ser eludidas si un actor malicioso o un administrador se conecta directamente al motor—, las restricciones residen en el núcleo del SGBD (Sistema Gestor de Base de Datos). Esto garantiza su aplicación universal y permite al optimizador de consultas utilizarlas para generar planes de ejecución matemáticamente más eficientes.
+Las restricciones (conocidas técnicamente como **constraints**) constituyen la primera línea de defensa lógica dentro del paradigma relacional. Son normativas declarativas aplicadas en la capa DDL (Lenguaje de Definición de Datos) que dictaminan las condiciones ineludibles que todo dato debe cumplir antes de persistirse. 
 
+Al ejecutarse directamente en el motor de base de datos (DBMS), garantizan una validación universal (que no puede ser eludida por clientes directos) y permiten al optimizador generar planes de ejecución más eficientes.
 
-El estándar SQL define un conjunto de herramientas fundamentales para garantizar la integridad de entidad y dominio:
+---
 
-* **NOT NULL:** En la teoría de bases de datos relacionales, el valor NULL es un marcador especial utilizado para indicar que un valor de datos no existe en la base de datos o es desconocido. No equivale a un cero numérico ni a una cadena de texto vacía. La restricción NOT NULL es una directiva imperativa que prohíbe que una tupla (fila) sea persistida si carece de un valor específico para la columna designada. Es crítica en campos de identificación vital, como números de documentos de identidad, direcciones de correo electrónico o fechas de transacción. Al intentar inyectar un valor NULL en una columna protegida, la transacción arrojará un error inmediato. Cuando se aplica sobre tablas preexistentes (ALTER TABLE), el motor verifica primero la totalidad de la tabla; si existen valores NULL históricos, la restricción no podrá ser creada hasta que los datos sean saneados.  
-* **UNIQUE:** Garantiza la unicidad absoluta de un valor o la combinación de varios valores dentro de una misma columna o conjunto de columnas, impidiendo la colisión de datos. Mientras que el comportamiento estándar de una clave primaria también impone unicidad, una tabla puede contener múltiples restricciones UNIQUE. A nivel interno, motores como Microsoft SQL Server, PostgreSQL y Oracle materializan esta regla construyendo un índice B-Tree único subyacente que acelera las búsquedas. En el tratamiento de valores NULL, la implementación del estándar varía sutilmente: algunas bases de datos permiten múltiples registros NULL en una columna UNIQUE argumentando que "desconocido" no es igual a otro "desconocido", mientras que otras adoptan un enfoque más restrictivo.  
-* **PRIMARY KEY (Clave Primaria):** Es el cimiento absoluto de la integridad de entidad. Constituye una superposición lógica de las restricciones NOT NULL y UNIQUE. Todo registro dentro de la estructura relacional es indexado y localizado mediante esta clave. Por diseño arquitectónico, solo puede existir una única restricción PRIMARY KEY por tabla, y comúnmente dicta la forma en que los datos se ordenan físicamente en los bloques del disco (índices agrupados o *clustered indexes*).  
-* **DEFAULT:** Actúa como un mecanismo de mitigación de la ausencia de datos. Si una instrucción de inserción omite una columna específica, la restricción DEFAULT entra en acción inyectando un valor predeterminado seguro, en lugar de permitir que el motor inserte un NULL. Es profusamente utilizada para establecer banderas booleanas por defecto (ej. activo \= TRUE) o marcas de tiempo iniciales.  
-* **CHECK:** Proporciona un mecanismo de validación condicional de grano fino, basado en predicados booleanos. El motor evalúa la condición de la restricción CHECK por cada fila antes de la inserción o actualización. Estas condiciones abarcan desde comparaciones simples, como rangos de valores (CHECK (salario \> 0)), comprobación de pertenencia a conjuntos, hasta validaciones complejas de coincidencia de patrones (expresiones regulares o cláusulas LIKE). No obstante, presentan limitaciones estrictas: generalmente no pueden referenciar valores de otras tablas, no admiten subconsultas embebidas, y rechazan el uso de funciones no deterministas (como el tiempo del sistema SYSDATE o la función USERENV en Oracle) dado que el resultado del chequeo debe ser inmutable y repetible.
+### Restricciones de Integridad Estándar
 
-### Validación Diferida y Temporalidad (Deferred Constraints)
-Un concepto de diseño avanzado que distingue a los sistemas transaccionales maduros es la manipulación de la temporalidad en la evaluación de las restricciones. Según el modelo de procesamiento estándar, las restricciones se evalúan de forma inmediata al término de cada instrucción individual (una evaluación "statement-level"). Si una instrucción actualiza un valor que transgrede una regla, el fallo es inmediato y la sentencia se revierte.  
-Existen escenarios, sin embargo, donde esta rigidez imposibilita la manipulación de la información. Un ejemplo paradigmático es la actualización de registros inmersos en dependencias cruzadas y relaciones circulares dentro de una transacción prolongada, donde la base de datos pasará por estados temporalmente inconsistentes antes de alcanzar el equilibrio final requerido.  
-Para solventar esta barrera analítica, el estándar SQL y sistemas como PostgreSQL y Oracle proporcionan mecanismos de restricciones diferidas, gobernados por las cláusulas DEFERRABLE.
+* **NOT NULL:** Prohíbe que una columna contenga marcadores `NULL` (valores desconocidos o inexistentes). Si se intenta aplicar a una tabla con datos preexistentes (`ALTER TABLE`), el motor requiere que los registros históricos sean saneados primero.
+* **UNIQUE:** Garantiza la unicidad absoluta de un valor o combinación de valores dentro de una columna. A nivel interno, los DBMS suelen crear un índice **B-Tree** subyacente para acelerar la validación. A diferencia de la clave primaria, una tabla puede tener múltiples restricciones `UNIQUE` y el tratamiento de valores `NULL` varía según el motor.
+* **PRIMARY KEY (Clave Primaria):** El pilar de la integridad de entidad. Es la unión lógica de `NOT NULL` y `UNIQUE`. Solo puede existir una clave primaria por tabla y generalmente determina el ordenamiento físico de los datos en disco (índice agrupado o *clustered index*).
+* **DEFAULT:** Inyecta un valor predeterminado si se omite en la inserción, evitando la propagación accidental de valores `NULL` (ej. `activo = TRUE`, `fecha = CURRENT_TIMESTAMP`).
+* **CHECK:** Evalúa predicados booleanos por cada fila antes de insertar o actualizar (ej. `CHECK (salario > 0)`). 
+  * *Limitaciones:* Solo puede evaluar la fila actual (no permite consultar otras tablas) y no acepta funciones no deterministas (como la fecha del sistema).
 
-* **INITIALLY IMMEDIATE:** La restricción es diferible, pero por defecto se comportará de manera agresiva y evaluará cada instrucción de forma inmediata.  
-* **INITIALLY DEFERRED:** La restricción suspende conscientemente la validación lógica durante todo el progreso de la transacción.
+---
 
-Bajo este modelo, los desarrolladores pueden emitir comandos UPDATE o INSERT que temporalmente violen las reglas de negocio. El SGBD retiene la memoria de estas operaciones y ejecuta la validación masiva únicamente en el instante en que la aplicación invoca el comando COMMIT. Si al finalizar el lote transaccional la topología de la información vuelve a ser congruente con la restricción, los cambios se persisten; si perdura una violación, toda la cadena de transacciones sufre un ROLLBACK incondicional. Durante una sesión activa, el estado de postergación puede ser alterado en tiempo real invocando el comando dinámico SET CONSTRAINTS.
+### Validación Diferida (Deferred Constraints)
 
-### Asertos SQL (SQL Assertions) y Restricciones de Integridad Global
-Las limitaciones arquitectónicas de las restricciones de tabla, particularmente la incapacidad de una cláusula CHECK de contener subconsultas que interroguen a otras entidades, dejan un vacío funcional al momento de modelar reglas de negocio holísticas. ¿Cómo se puede garantizar nativamente que el monto total registrado en el encabezado de un pedido coincida estrictamente con la sumatoria algorítmica de todas las filas de detalle del pedido?11.  
-La respuesta teórica del estándar SQL-92 son los Asertos (CREATE ASSERTION). Una aserción es un objeto de base de datos a nivel de esquema, independiente de una tabla específica, diseñado para evaluar predicados booleanos que involucran múltiples relaciones de forma simultánea. Mientras exista la aserción, el SGBD garantiza que ninguna modificación (en cualquier tabla referenciada) provocará que el predicado global devuelva falso. Por ejemplo, se puede modelar una aserción que decrete que la suma total de asientos ocupados en la tabla de reservas (BOOKINGS) jamás exceda la capacidad técnica declarada en la tabla maestra de vuelos (FLIGHTS).
+Por defecto, las restricciones se evalúan inmediatamente al finalizar cada sentencia SQL (*statement-level*). Sin embargo, en transacciones complejas con dependencias circulares o actualizaciones cruzadas, esto provocaría fallos prematuros.
+
+Para resolverlo, SQL permite declarar restricciones diferibles mediante la cláusula `DEFERRABLE`:
+* **INITIALLY IMMEDIATE:** Evaluación agresiva. Se valida al término de cada instrucción individual.
+* **INITIALLY DEFERRED:** Evaluación postergada. La validación se suspende durante el progreso transaccional y se ejecuta masivamente solo al invocar `COMMIT`. Si en ese punto hay inconsistencias, se realiza un `ROLLBACK` total.
+* **SET CONSTRAINTS:** Permite cambiar dinámicamente el estado de postergación en la sesión activa.
+
+---
+
+### Asertos SQL (SQL Assertions)
+
+Un aserto es una restricción global independiente de cualquier tabla, diseñada para evaluar predicados lógicos complejos y multitabla a nivel de esquema (ej. garantizar que la sumatoria de reservas no exceda la capacidad de un vuelo).
 
 | Característica | Restricción CHECK | Aserto (ASSERTION) |
-| :---- | :---- | :---- |
+| :--- | :--- | :--- |
 | **Ámbito de Aplicación** | Vinculado a una tabla o columna específica. | Nivel de esquema (Global). |
-| **Complejidad Admitida** | Predicados lógicos locales simples a la fila. | Múltiples tablas, subconsultas complejas, agrupaciones lógicas. |
-| **Activación** | Eventos DML sobre la tabla dueña. | Cualquier DML sobre cualquier tabla referenciada en el predicado. |
-| **Costo Computacional** | Muy bajo (Costo ![Notación algebraica](/content/integridad-seguridad/image1.png) por fila). | Extremadamente alto (Evaluaciones cruzadas ![Notación algebraica](/content/integridad-seguridad/image2.png) o peor). |
+| **Complejidad Admitida** | Predicados locales simples a la fila. | Múltiples tablas, subconsultas, agregaciones. |
+| **Activación** | Modificaciones DML en la tabla contenedora. | Modificaciones DML en cualquier tabla involucrada. |
+| **Costo Computacional** | Muy bajo ($O(1)$ por fila). | Extremadamente alto ($O(N^2)$ o superior). |
 
-A pesar de su asombroso poder descriptivo, las aserciones han sido históricamente el "eslabón perdido" de las bases de datos relacionales. Durante más de 25 años, casi ningún motor de base de datos comercial importante implementó esta característica del estándar. El motivo radica en el impacto perjudicial inasumible en el rendimiento general del sistema: evaluar subconsultas de agrupamiento (SUM, COUNT) cruzando múltiples tablas mastodónticas después de cada modificación transaccional paralizaría el motor.  
-No obstante, la innovación reciente en motores optimizados con inteligencia artificial y paralelización ha resucitado el concepto. Por ejemplo, en Oracle Database versión 23ai (específicamente a partir del parche 23.26.1), la funcionalidad ha sido finalmente habilitada utilizando un modelo semántico altamente sofisticado que emplea construcciones existenciales anidadas (NOT EXISTS) y una nueva cláusula de validación universal denominada ALL SATISFY. Esta cláusula optimiza el árbol de ejecución evaluando subconsultas tabulares y aplicando condiciones de test que evitan la sobrecarga cognitiva de las negaciones dobles en el analizador de SQL, logrando así validar integridad de datos a gran escala que tradicionalmente exigía complejas mallas de código en lenguajes como PL/SQL. Al igual que las restricciones de tabla, estas aserciones modernas pueden declararse como DEFERRABLE INITIALLY DEFERRED para solventar problemas de interdependencia durante las inserciones masivas.
+#### Desafío de Rendimiento e Innovación
+Debido a su elevadísimo costo de procesamiento (requiere evaluar consultas de agregación tras cada inserción o cambio), las aserciones no fueron implementadas por los motores comerciales durante décadas. 
+
+Recientemente, motores modernos como **Oracle 23ai** las han habilitado optimizando su ejecución mediante subconsultas existenciales (`NOT EXISTS`) y la cláusula de validación universal **ALL SATISFY**, reduciendo drásticamente el impacto de la validación a gran escala.
 
 ## Practica guiada
 

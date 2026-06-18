@@ -11,15 +11,48 @@ references:
   - unidad-1-ref-05
 ---
 
-La transcripción estructurada del SQL forjada laboriosamente por analistas informáticos y administradores dista categóricamente del entramado orgánico final que la unidad central de proceso interpretará bajo lineamientos electromagnéticos. Detrás del front-end imperativo se yergue el cerebro de compilación, conocido en la praxis como el núcleo procesador y optimizador de consultas transaccionales. Su inmensa responsabilidad es dilucidar un laberinto matemático que transmute cada orden semántica hacia las entrañas binarias mediante un andamiaje predecible e inviolable.  
-El flujo asintótico en la resolución transcurre por intermedio de secuencias estratificadas: segmentación algorítmica por barrido (parsing), validación intrínseca gramatical, reestructuración algebraica unificada (Optimización Lógica o Heurística), y finalmente, la designación física que recala en cálculos estadísticos rigurosos (Optimización Física o por Costes). Adicionalmente, el núcleo transaccional en infraestructuras masivas adecúa dinámicamente sus canalizaciones considerando modalidades de extracción; pudiendo invocar la ejecución estática secuencial en modo fila para esquemas concentrados de inserción rápida tipo OLTP, o disparar procesamiento del modo por lotes fundamentado en vectores columnares ideado imperativamente para el procesamiento macro o almacenamiento analítico dimensional de datos tipo almacén.  
-Al someterse los eslabones al compás estructural de revisión del analizador morfológico, los compiladores amalgaman un Árbol Canónico Inicial subyacente. Esta representación gráfica ramificada traduce con lealtad absoluta e inflexible las interpelaciones originales apelando de forma intrínseca e imperativa al engranaje conceptual de operadores tipificados en la variante del Álgebra Relacional Extendida. Al existir incalculables posibilidades permutables de esquemas que logran resolver un constructo determinado infiriendo secuencias idénticas en dispares magnitudes temporales, el núcleo infiere de manera algorítmica y axiomática el despliegue de las topologías equivalentes.
+Detrás de la interfaz declarativa de SQL se encuentra el **optimizador de consultas**, el cerebro del motor DBMS. Su función es traducir y transformar una orden semántica SQL en una secuencia física de operaciones eficientes de bajo nivel (plan de ejecución).
 
+---
 
-La Optimización Heurística constituye el plano asintótico pre-compilado sustentado integralmente sobre los axiomas de identidad e isomorfismo del cierre relacional. Su finalidad axiomática suprema estriba invariablemente en encoger la huella temporal menguando drásticamente el espacio probabilístico originado por el estallido geométrico de resultados intermedios. El conjunto de axiomas predica la necesidad acérrima de forzar las supresiones volumétricas (mediante los apéndices de la Selección ![Notación algebraica](/content/modelo-relacional/image2.png)) hundiéndolas o propulsándolas inexorablemente en el descenso hacia los confines radiculares del árbol topológico, precipitando de forma antelada un atrofiamiento numérico extremo del estrato poblacional transferible de previo al acoplamiento voraz de matrices cruzadas como en el escenario de la Reunión (![Notación algebraica](/content/modelo-relacional/image9.png)).  
-A nivel netamente matemático, el optimizador infiere y descifra la maleabilidad lógica articulando postulados inexpugnables de la identidad geométrica en relaciones lógicas de la variante: ![Notación algebraica](/content/modelo-relacional/image39.png). Esta conmutabilidad e identidades de segmentación permiten desgajar predicados aglomerados en el extremo exterior transmutándolos hacia sentencias minúsculas atomizadas, capaces de infiltrarse individualmente hacia el nexo original donde cada eslabón específico es concebido primitivamente. Adicionalmente, agrupa o empuja sistemáticamente las operaciones directrices del vector vertical (mediante la extirpación y colapso asintótico de columnas redundantes de la Proyección ![Notación algebraica](/content/modelo-relacional/image3.png)) propiciando que en el flujo encadenado únicamente converjan en memoria magnética bytes orgánicos elementales indispensables y exentos de vacuidades para solventar el enunciado central.
+### El Proceso de Resolución de una Consulta
 
-### Optimización Dinámica Focalizada por Costes y Transiciones Físicas
-Desvanecida la optimización deductiva se inicia de forma encarnizada la Optimización por Costes; encargada de cimentar transversalmente cada nódulo derivado de abstracciones heurísticas contra el panorama estadístico orgánico de la máquina física real y sus limitantes subyacentes. El sistema transaccional escudriña el catálogo del servidor en persecución febril de componentes estadísticos esenciales resguardados en el interior de los diccionarios de datos: promedios numéricos cardinales poblacionales, factores de agrupamiento y estancamiento relacional en dominios nominales, dispersión y granularidad, ratios fraccionales de selectividad y proliferación arquitectónica de jerarquías de punteros entrelazados asimétricamente y agrupados usualmente mediante ramificaciones dinámicas de árboles B+18.  
-Amalgamando deducciones algorítmicas combinatorias e inyectando un barrido predictivo computacional de alta escala, se dirimen de forma precisa y exahustiva estimadores algorítmicos. Las bifurcaciones transaccionales escogen la pauta física entre ramificaciones como lecturas progresivas enteramente secuenciales en caso de dispersión desorganizada, frente a rastreos indexados binarios localizados en fragmentos aislados temporalmente. Sopesa de manera matemática asintótica las combinaciones operativas y algoritmia imperativa de las matrices superpuestas como los bucles recursivos anidados, uniones transaccionales combinadas y particionamientos volumétricos de algoritmos entrelazados (Hash Join, Merge Join, Nested-Loop), dictaminando mediante la ponderación exhaustiva de las penalizaciones computacionales relativas a ciclos transaccionales de caché magnético el plan cardinal orgánico.  
-Este andamiaje invisible que transcurre en fracciones irrisorias de tiempo salvaguarda consistentemente la capacidad operacional y confiere las garantías ineludibles para la escalabilidad sistémica que las ciencias contemporáneas y economías de redes en la era global confían y exigen ciegamente, evidenciando un eslabón incuestionable del triunfo absoluto en el campo aplicativo en contraste con implementaciones y axiomas procedimentales incipientes del pasado analítico.
+El flujo interno de una consulta recorre las siguientes fases secuenciales:
+
+1. **Segmentación y Barrido (Parsing):** Análisis léxico y sintáctico para verificar la validez formal del texto SQL.
+2. **Validación Semántica:** El motor comprueba que las tablas y columnas existan y que el usuario posea permisos, contrastando la consulta con el *catálogo de metadatos*.
+3. **Generación del Árbol Canónico:** Se construye una representación ramificada inicial de la consulta utilizando operadores del **Árgebra Relacional Extendida**.
+4. **Optimización Heurística (Lógica):** Se aplican reglas y equivalencias matemáticas para reestructurar el árbol de manera óptima.
+5. **Optimización por Costes (Física):** Se evalúan estadísticas físicas y algoritmos alternativos para generar el plan de ejecución definitivo de menor costo.
+
+---
+
+### Optimización Heurística (Lógica)
+
+Se fundamenta en las reglas de equivalencia del álgebra relacional. Su propósito es reducir el volumen de datos de los resultados intermedios antes de ejecutar operaciones pesadas.
+
+* **Regla de Oro: Hundimiento de la Selección ($\sigma$):** Consiste en "empujar" los operadores de selección lo más cerca posible de las hojas del árbol (tablas base). Esto filtra registros de forma temprana, evitando que pasen a operaciones costosas como reuniones ($\bowtie$).
+* **Hundimiento de la Proyección ($\pi$):** Elimina columnas innecesarias en las etapas iniciales del procesamiento, reduciendo la memoria RAM utilizada por fila.
+* **Uso de Equivalencias:** Aplicación de leyes como la conmutatividad y asociatividad de las reuniones:
+  ![Notación algebraica](/content/modelo-relacional/image39.png)
+
+---
+
+### Optimización por Costes (Física)
+
+En esta fase, el optimizador decide el "cómo" físico de la ejecución, apoyándose en las estadísticas guardadas en el diccionario de datos.
+
+#### 1. Consulta de Métricas Estadísticas
+El DBMS analiza:
+* Cardinalidad de las tablas (número de filas).
+* Selectividad de los atributos y dispersión de datos.
+* Estructuras de acceso existentes (presencia de **Árboles B+** o índices hash).
+
+#### 2. Selección de Algoritmos Físicos
+El optimizador sopesa las siguientes alternativas para decidir el plan definitivo:
+* **Método de Acceso a Tablas:** Lectura secuencial completa (*Table Scan*) vs. Búsquedas indexadas directas (*Index Scan*).
+* **Algoritmos para realizar Reuniones (Joins):**
+  * *Bucles anidados (Nested-Loop Join):* Indicado para tablas pequeñas o cuando hay índices de apoyo.
+  * *Unión por Mezcla (Merge Join):* Requiere que las entradas estén ordenadas por el atributo de reunión.
+  * *Reunión Hash (Hash Join):* Construye una tabla hash en memoria para emparejar registros de tablas medianas/grandes.
+* **Modo de Procesamiento:** *Row Mode* (fila a fila, óptimo para OLTP) o *Batch/Vectorized Mode* (por lotes de columnas, óptimo para OLAP y Data Warehouses).

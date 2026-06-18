@@ -2,7 +2,7 @@
 title: Manipulación de Datos XML
 slug: manipulacion-xml
 unit: xml-datos
-summary: Una vez estructurados y validados, los documentos XML requieren infraestructuras transaccionales para ser leídos, procesados y modificados …
+summary: Para leer, procesar y modificar documentos XML, las aplicaciones emplean diferentes modelos de análisis (parsing) y persistencia física.
 order: 1
 references:
   - silberschatz-2019
@@ -11,49 +11,117 @@ references:
   - unidad-5-ref-01
 ---
 
-Una vez estructurados y validados, los documentos XML requieren infraestructuras transaccionales para ser leídos, procesados y modificados por la lógica de negocio de las aplicaciones. La elección del modelo de análisis (parsing) impacta exponencialmente en el consumo de memoria, el rendimiento de la CPU y la mantenibilidad del código, constituyendo una decisión arquitectónica vital en sistemas distribuidos de alta concurrencia.
+Una vez estructurados y validados, los documentos XML requieren infraestructuras transaccionales para ser leídos, procesados y modificados por la lógica de negocio de las aplicaciones. La elección del modelo de análisis (*parsing*) impacta exponencialmente en el consumo de memoria, el rendimiento de la CPU y la mantenibilidad del código.
 
+---
 
-#### Document Object Model (DOM)
-DOM es el estándar del W3C que representa el documento XML mediante una estructura de árbol instanciada completamente en la memoria de trabajo. El analizador DOM lee el archivo original en su totalidad y construye una jerarquía interconectada de objetos (Node, Element, Text, Attr), permitiendo a la aplicación navegar bidireccionalmente hacia cualquier punto del documento, insertar o eliminar nodos dinámicamente y ejecutar consultas complejas mediante XPath sobre el árbol instanciado.  
-A pesar de su inigualable flexibilidad y facilidad de navegación, DOM presenta una complejidad de espacio prohibitiva de ![Notación algebraica](/content/xml-datos/image1.png), donde el árbol resultante en memoria puede consumir hasta diez veces el tamaño en disco del documento XML original. En entornos corporativos distribuidos, la carga concurrente de documentos masivos utilizando DOM desencadena una severa degradación del rendimiento, provocando pausas extensas en los ciclos del recolector de basura (Garbage Collection stalls) y eventuales colapsos por falta de memoria. Aunque investigaciones avanzadas han propuesto estrategias de análisis diferido o "parsing progresivo" (donde un árbol virtual se expande con contenidos concretos solo cuando la aplicación los solicita), DOM sigue siendo recomendable exclusivamente para la modificación de documentos pequeños y operaciones que exijan conocimiento global de la jerarquía.
+### Modelos de Análisis XML (*Parsing*)
 
-#### Simple API for XML (SAX)
-Concebido empíricamente por la comunidad de desarrolladores para mitigar la crisis de memoria de DOM, SAX establece un paradigma basado en eventos mediante un modelo de empuje (push model). En SAX, el documento nunca reside completamente en memoria. El analizador lee el archivo secuencialmente como un flujo de texto; cada vez que reconoce un token semántico (el inicio de una etiqueta, texto de contenido, o el final de una etiqueta), "empuja" una notificación asíncrona hacia el código de la aplicación cliente invocando métodos de retrollamada (callbacks) previamente registrados, típicamente sobrecargando clases como DefaultHandler. Los métodos startElement(), endElement() y characters() reciben los datos fragmentados conforme el cabezal de lectura avanza sin posibilidad de retroceso.  
-SAX es excepcional en términos de eficiencia de rendimiento y posee una complejidad de memoria constante de ![Notación algebraica](/content/xml-datos/image2.png), siendo el estándar industrial irrefutable para la ingesta rápida de archivos monolíticos de múltiples gigabytes en flujos de datos unidireccionales. Sin embargo, la naturaleza dirigida por eventos externaliza radicalmente la complejidad al programador. El desarrollador está forzado a implementar complicadas máquinas de estado transicionales y variables globales temporales para dotar de contexto a los datos recibidos (por ejemplo, recordar que se está dentro de un elemento \<Order\> al procesar el texto de un elemento \<Price\>). Además, SAX es una API estrictamente de solo lectura, sin soporte nativo para XPath.
+Existen tres arquitecturas principales para procesar y parsear documentos XML en memoria de trabajo:
 
-#### Streaming API for XML (StAX)
-Estandarizado en la plataforma Java bajo el JSR 173, StAX representa el punto de equilibrio evolutivo, fusionando la eficiencia asintótica de memoria de SAX con el control procedimental imperativo de DOM. StAX introduce el modelo de extracción (pull model). En lugar de que el analizador dispare eventos ciegamente, es el código de la aplicación el que gobierna el ciclo de ejecución, "extrayendo" o solicitando explícitamente el siguiente evento léxico del flujo mediante invocaciones iterativas (típicamente empleando un bucle while(reader.hasNext())).  
-Esta inversión de control simplifica drásticamente la gestión del estado, permitiendo la construcción de funciones jerárquicas lógicas y la omisión directa de subárboles no deseados, filtrando eficientemente el documento. Adicionalmente, StAX es una API bidireccional de pleno derecho, proporcionando herramientas estandarizadas tanto para el análisis como para la construcción y serialización de salida (escritura) de XML.  
-StAX expone la información a través de dos API divergentes generadas mediante XMLInputFactory y XMLOutputFactory:
+#### 1. Document Object Model (DOM)
+Representa todo el documento XML como una estructura jerárquica de árbol cargada completamente en la memoria RAM.
 
-1. **Cursor API (XMLStreamReader y XMLStreamWriter):** Representa la capa más cercana al metal. El analizador actúa como un cursor o puntero deslizante sobre la información del documento (infoset). Al llamar a next(), el cursor muta su estado interno, minimizando drásticamente la creación de objetos en la memoria dinámica (heap).  
-2. **Iterator API (XMLEventReader y XMLEventWriter):** Diseñada para mayor abstracción orientada a objetos, transforma cada transición de estado en un objeto persistente de la clase XMLEvent extraído a través de nextEvent(). Aunque consume marginalmente más recursos que la API de cursor, facilita el diseño de transformaciones modulares, conductos paralelos (pipelines) y proporciona el método peek() para inspeccionar el próximo token sin desplazar el flujo subyacente.
+* **Ventajas:** Permite navegación bidireccional libre, manipulación dinámica (insertar, editar, eliminar nodos) y ejecución nativa de consultas XPath sobre el árbol de objetos (`Node`, `Element`, `Text`, `Attr`).
+* **Desventajas:** Presenta una complejidad de espacio prohibitiva de:
+  $$O(N)$$
+  El árbol en memoria puede consumir de 5 a 10 veces el tamaño físico del archivo XML original.
+* **Caso de Uso:** Recomendado exclusivamente para la modificación de archivos pequeños o cuando se requiere conocer toda la jerarquía del documento simultáneamente.
 
-Simulaciones empresariales rigurosas de carga distribuida confirman que implementaciones maduras de StAX logran incrementos de productividad del procesamiento de hasta un 15% sobre configuraciones optimizadas de SAX.
+#### 2. Simple API for XML (SAX)
+Modelo basado en eventos guiado por empuje (*push model*). El analizador lee el archivo secuencialmente como un flujo de texto sin cargarlo en memoria.
 
-#### JAXB (Java Architecture for XML Binding) y Abstracciones Alternativas
-Elevando el paradigma de manipulación hacia dominios semánticos de mayor nivel, el enfoque de vinculación (Binding) automatiza la transformación entre XML y objetos nativos de programación. JAXB realiza la deserialización (unmarshalling) instanciando directamente clases de Java que modelan las entidades del negocio, y serializa (marshalling) modificadores de estado internos de vuelta a XML, guiado primordialmente por anotaciones incrustadas generadas a partir de esquemas XSD. Aunque reduce el tiempo de desarrollo de código estructurado a una fracción, JAXB adolece de sobrecarga transaccional, es dependiente de XML completamente válido y presenta rigidez insalvable si la topología XML es arbitraria, sujeta a extensiones desconocidas o carece de esquemas definidos a priori. Para mitigar las dependencias absolutas, infraestructuras unificadoras como JAXP (Java API for XML Processing) permiten empaquetar de forma agnóstica la instanciación de analizadores subyacentes (DOM, SAX o StAX), permitiendo intercambiar el motor central sin alterar las interfaces del cliente.  
-Más allá de los ecosistemas basados en JVM, otras plataformas resuelven la dualidad de carga recurriendo a arquitecturas análogas. En Python, la biblioteca estándar xml.etree.ElementTree expone el método tradicional de creación de árboles de DOM mediante parse() para documentos manipulables convencionalmente, pero al mismo tiempo suministra iterparse(), una solución incremental basada en flujo (pull parser) que libera las asignaciones de elementos procesados conforme se alcanzan eventos start y end, conteniendo el uso de memoria en procesos de macrodatos de forma óptima.
+* **Mecánica:** A medida que detecta etiquetas de inicio, texto o etiquetas de cierre, "empuja" notificaciones asíncronas llamando a funciones de retrollamada (*callbacks*) implementadas por el desarrollador (ej. `startElement()`, `endElement()`, `characters()`).
+* **Ventajas:** Complejidad de memoria constante y mínima:
+  $$O(1)$$
+  Es idóneo para ingestar archivos gigantescos de varios gigabytes.
+* **Desventajas:** Es estrictamente de solo lectura y unidireccional. La complejidad lógica se traslada al desarrollador, quien debe construir máquinas de estado manuales para no perder el contexto del nodo que está leyendo.
+
+#### 3. Streaming API for XML (StAX)
+Modelo basado en eventos guiado por extracción (*pull model*). En lugar de que el analizador dispare eventos ciegamente, es la aplicación la que toma el control e itera pidiendo el siguiente evento léxico.
+
+```java
+// Ejemplo conceptual del bucle de extracción StAX (Java)
+XMLInputFactory factory = XMLInputFactory.newInstance();
+XMLStreamReader reader = factory.createXMLStreamReader(new FileInputStream("datos.xml"));
+
+while (reader.hasNext()) {
+    int event = reader.next();
+    if (event == XMLStreamConstants.START_ELEMENT) {
+        if ("sensor".equals(reader.getLocalName())) {
+            System.out.println("ID: " + reader.getAttributeValue(null, "id"));
+        }
+    }
+}
+```
+
+StAX provee dos variantes de API para la lectura:
+* **Cursor API (`XMLStreamReader`):** Funciona como un cursor deslizante de bajo nivel sobre el flujo de datos. Minimiza la creación de objetos en el Heap, logrando el máximo rendimiento.
+* **Iterator API (`XMLEventReader`):** Envuelve los eventos en objetos fuertemente tipados (`XMLEvent`). Es de mayor nivel, soporta conductos (*pipelines*) y permite usar `.peek()` para inspeccionar el siguiente evento sin consumirlo.
+
+---
+
+### Vinculación de Datos (*XML Binding*) y ElementTree
+
+#### JAXB (Java Architecture for XML Binding)
+Automatiza la traducción entre documentos XML y objetos nativos de programación mediante anotaciones. 
+* **`Unmarshalling`:** Transforma un XML de entrada en una instancia de clase Java.
+* **`Marshalling`:** Convierte objetos de negocio de vuelta a formato de texto XML.
+* **Desventajas:** Alta sobrecarga en CPU y rigidez si el XML cambia constantemente de esquema.
+
+#### ElementTree (Python)
+Combina ambas metodologías de análisis:
+* **`parse()`:** Carga todo el documento como un árbol en memoria (estilo DOM).
+* **`iterparse()`:** Actúa como un analizador incremental (*pull parser*), permitiendo liberar memoria dinámicamente conforme se procesan los eventos de cierre de nodos, conteniendo el uso de memoria en análisis de macrodatos.
+
+```python
+# Liberación de memoria con iterparse en Python
+import xml.etree.ElementTree as ET
+
+for event, elem in ET.iterparse("sensores_masivo.xml", events=("end",)):
+    if elem.tag == "registro":
+        procesar_datos(elem)
+        elem.clear() # Libera el nodo de la memoria RAM
+```
+
+---
+
+### Comparativa General de APIs de Procesamiento
 
 | Dimensión Operativa | DOM (Document Object Model) | SAX (Simple API for XML) | StAX (Streaming API for XML) | JAXB (XML Binding) |
-| :---- | :---- | :---- | :---- | :---- |
-| **Arquitectura** | Carga integral de Árbol en memoria | Flujo dirigido por Eventos (Push) | Flujo controlado por Petición (Pull) | Mapeo Objeto-Relacional |
-| **Sentido de Operación** | Lectura, Escritura y Mutación Dinámica | Estrictamente Lectura Unidireccional | Lectura y Escritura Unidireccional | Lectura (Unmarshall) y Escritura (Marshall) |
-| **Carga de Estado del Sistema** | Administrada nativamente por la API | Manual (Altamente Compleja) | Procedimental (Simplificada) | Abstraída por el modelo de clases |
-| **Soporte de Búsqueda de Rutas** | Nativo (Soporta XPath sin restricciones) | Imposible (Requiere escaneo) | Imposible (Contexto local efímero) | Inviable para XML con esquemas dinámicos |
+| :--- | :--- | :--- | :--- | :--- |
+| **Modelo Arquitectónico** | Carga del árbol en memoria. | Flujo por eventos (*Push*). | Flujo por eventos (*Pull*). | Mapeo Objeto-XML. |
+| **Dirección de E/S** | Lectura y Escritura. | Solo Lectura. | Lectura y Escritura. | Lectura y Escritura. |
+| **Gestión de Estado** | Nativa y automática. | Manual (Compleja). | Procedimental (Sencilla). | Abstraída en clases. |
+| **Uso de Memoria** | Alto ($O(N)$). | Mínimo ($O(1)$). | Mínimo ($O(1)$). | Medio-Alto. |
+| **Soporte XPath** | Nativo y completo. | No soportado. | No soportado. | No aplicable directamente. |
+
+---
 
 ### Arquitecturas de Persistencia XML
-La manipulación en memoria es estéril si los datos XML no persisten de manera eficiente. La dicotomía entre XML centrado en datos y centrado en documentos gobierna las topologías de las bases de datos aplicables.  
-Las **Bases de Datos Habilitadas para XML (XML-Enabled Databases)** son SGBD relacionales (o híbridos) tradicionales como Oracle, PostgreSQL o Microsoft SQL Server que han incorporado mecanismos para absorber XML. Típicamente adoptan una de dos estrategias: desgloban jerárquicamente el XML transformando sus nodos en correspondencias precisas de tablas, filas y columnas (relational mapping), o almacenan la totalidad de la cadena de caracteres en campos monolíticos CLOB (Character Large Object) utilizando en ocasiones el tipo híbrido estandarizado XMLType propuesto por ISO. Si bien son efectivas en arquitecturas donde el 90% de la actividad transaccional es relacional y el XML funciona exclusivamente como un vector transitorio, estas bases sufren degradación de rendimiento insostenible (penalizaciones de JOIN y reensamblaje lógico continuo) cuando los documentos alcanzan tamaños y profundidades anidadas críticas.  
-En contraposición diametral, las **Bases de Datos XML Nativas (NXD - Native XML Databases)** como eXist, Tamino XML Server o XIndice adoptan un modelo conceptual donde el documento XML es la unidad lógica mínima y fundamental de almacenamiento, respetando invariablemente su jerarquía de nodos, espacios de nombres interconectados y orden léxico original sin fragmentarlo en tablas adyacentes. Las NXD agrupan conceptualmente los archivos en "colecciones" (equivalentes a los directorios del sistema de ficheros o a las tablas en esquemas SQL) y asignan identificadores únicos y rastreables a cada nodo para facilitar su reconstrucción y manipulación instantánea. Por su diseño intrínseco de indexación estructural, las NXD son el ecosistema primario ideal para procesar y optimizar nativamente lenguajes de consulta de alta dimensión como XQuery.
 
-## Idea clave
+El almacenamiento persistente de XML se divide según la prioridad del modelo de datos:
 
-<Callout title="DOM vs streaming">
-Usa DOM cuando necesites mutar el arbol completo en memoria; prefiere SAX o StAX para documentos grandes que solo debes recorrer una vez.
+#### 1. Bases de Datos Habilitadas para XML (*XML-Enabled*)
+SGBD relacionales tradicionales (PostgreSQL, Oracle, SQL Server) adaptados para procesar XML.
+* **Mapeo Relacional:** Descomponen el documento XML e insertan los valores en tablas y filas relacionales normales.
+* **Almacenamiento Nativo XMLType / CLOB:** Almacenan el documento íntegro en columnas especiales de tipo texto o binario, indexando campos clave mediante expresiones XPath.
+* **Caso de Uso:** Indicado cuando el 90% de los datos de la aplicación son estrictamente relacionales.
+
+#### 2. Bases de Datos XML Nativas (*NXD - Native XML Databases*)
+Sistemas de bases de datos diseñados específicamente para almacenar documentos XML como su unidad lógica de información (ej. eXist, Tamino, XIndice).
+* **Mecánica:** Preservan la jerarquía original del documento, espacios de nombres y el orden de los nodos sin fragmentarlos.
+* **Estructura:** Organizan la información en colecciones (análogas a carpetas o tablas relacionales) y optimizan la indexación de nodos para consultas dinámicas y masivas con **XQuery**.
+
+---
+
+## Ideas clave
+
+<Callout type="info">
+**DOM vs Streaming:**
+Usa DOM cuando necesites consultar repetidamente el árbol en memoria o mutar su estructura. Prefiere SAX o StAX para la lectura secuencial de documentos masivos que no caben en la RAM.
 </Callout>
 
-<ExerciseBlock title="Elegir API">
-Para un feed XML de millones de registros de sensores, ¿que modelo elegirias y por que?
+<ExerciseBlock title="Selección de API para Sensores">
+Si estás diseñando un servicio web que recibe un flujo continuo de millones de registros de telemetría IoT estructurados en XML, ¿qué modelo de análisis elegirías para procesar el flujo y por qué?
 </ExerciseBlock>

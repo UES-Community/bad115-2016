@@ -2,7 +2,7 @@
 title: Estrategias de Diseño, Reglas Rígidas y Optimización del Optimizador (Cost-Based Optimizer)
 slug: diseno-optimizador
 unit: indexacion-sql
-summary: Poseer el mejor acero forjado no garantiza ganar la guerra si la estrategia dictaminada del estratega es equívoca.
+summary: El Optimizador de Consultas decide el mejor plan de ejecución basándose en estadísticas, selectividad y la estructura de los índices compuestos.
 order: 6
 references:
   - silberschatz-2019
@@ -11,47 +11,100 @@ references:
   - unidad-4-ref-06
 ---
 
-Poseer el mejor acero forjado no garantiza ganar la guerra si la estrategia dictaminada del estratega es equívoca. A nivel operativo subyacente, contar con docenas de árboles de indexados hiper-especializados no asegura la velocidad de acceso, puesto que el último ejecutor y tomador de la dictaminación de rutas corre al unísono de un software algorítmico microscópico empotrado: El **Optimizador de Consultas Evaluador de Costos (Query Optimizer)**44. Este componente cerebral matemático intercepta la requisición del usuario y emite miles de trayectos probables simulados para determinar y elegir obligatoriamente el escenario con el peaje o castigo monetario subyacente estimado menor a la paridad E/S logradas contra los ciclos exigidos del microprocesador o paralelismo. Para dictaminar el uso favorable de uno u otro puente de enlace algorítmico, o si desviar el flujo arremetiendo forzosamente contra un barrido abrumador y ciego sobre la tabla en crudo es más prudente, la decisión radica enteramente en confiar fehacientemente de métricas latentes que se compendian estadísticamente bajo el acrónimo vital de Estimación de Cardinalidad en las tablas.
+Poseer índices especializados no garantiza un alto rendimiento si el **Optimizador de Consultas Basado en Costos (Query Optimizer)** decide ignorarlos. Este motor estima el costo de E/S (I/O) y los ciclos de CPU de múltiples planes de ejecución alternativos, eligiendo la ruta óptima para resolver la consulta.
 
+---
 
-La arquitectura que sustenta la elección del árbol ideal pende intrincadamente de dos preceptos teóricos de medición interconectados:
+### Estimación de Cardinalidad y Selectividad
 
-* **Cardinalidad:** En semántica de bases transaccionales orientadas al optimizador analítico abstracto y alejada enteramente del modelado diagramático fundamental entre tablas, el estrato funcional o Cardinalidad de una columna singular detalla formalmente a ciencia el compendio y abanico o monto general de combinaciones únicas asimétricas, heterogéneas y distintas, enclavadas y atestiguadas en conjunto absoluto subyacente a toda una serie, al igual que los cómputos que proyectan de manera incierta el espectro o fila de datos arrojados previstos para cada eslabón y operador en el cauce relacional. Un ejemplo drástico define una columna de Género M/F (baja cardinalidad), comparada asimétricamente a la de una columna asignada como Número Nacional de Identificación Fiscal (cardinalidad estratosférica superlativa donde ningún registro será reiterado en miles de pasadas).  
-* **Selectividad:** Acuñada matemáticamente, define intrínsecamente la ración y divisor estadístico de porcentaje fragmentario (fracción asimétrica sobre un todo perenne numérico) atestiguando o delimitando un universo numérico poblacional totalitario evaluando la capacidad discriminatoria a rechazar. Al escindir filas arrojando o solventando una interrogante restrictiva dictaminada anteponiendo filtros en las cláusulas de precondición en el apartado DML del WHERE. Una proporción selectiva ideal fracciona asombrosamente los campos arrastrando o permitiendo un cruce del total microscópico o infinitesimal. La ecuación primordial se resuelve conceptualmente tasando Cardinalidad / Total Absoluto de Fila. Índices construidos en columnas con una Selectividad robusta cercana al estrato total 1.0 fungen como presas de hiper-búsquedas y aciertos de oro.
+El optimizador toma decisiones apoyándose en dos métricas estadísticas fundamentales:
 
-La simbiosis entre ambas rige el dictamen: **Alta Cardinalidad y Robusta Selectividad garantizan enaltecer al índice en la jerarquía del SGBD volviéndolo el plan ideal a cursar.**  
-Si la heurística impuesta en la consulta invoca restricciones de selectividad nimia o muy endeble (verbigracia SELECT * FROM ordenes WHERE Estado_Delivery_Concluido \= Falso, con base en que una anomalía masiva denota el 85% transaccional de los lotes asumiendo rangos de espera generalizada), el optimizador discernirá, mediante su compendio y matriz estadística de costos, que seguir y leer las hojas punitivas para el 85% acarreará un castigo demencial derivado de obligar miles de incursiones saltuarias imprevisibles (Random I/O). Ignorará deliberadamente el árbol o esfuerzo de índices y priorizará imperativamente la ruta primaria burda y cruda por lectura por lotes secuencial directa del medio masivo perimetral (Barrido de Secuencia Completa - Full Sequential Scan), el cual es inmensamente más fluido, tolerante a fallos lógicos asimétricos e íntegramente de contigüidad previsible en las capas subyacentes logísticas. Es tarea imperiosa e insalvable que el profesional mantenga latente rutinas operativas en background automatizado previendo su caducidad, (ej: un Demonio del sistema como el subsistema Autovacuum / ANALYZE bajo distribuciones PostgreSQL) que mantenga fresco y veraz todos y cada uno de los parámetros, métricas probabilísticas de los árboles e histogramas actualizados inyectados de contingencia. El abismo de descuidar estas bases estadísticas arrojadas degenera una inexactitud e inoperancia crítica generalizada empujando al optimizador ciego, resultando en catástrofes de rendimiento subyacente abismales por *Deriva de Estimación* y predicción desviada colosal empujando al hardware a cuellos de botella masivos de CPU desastrosos.
+1. **Cardinalidad:** Representa el número de valores únicos y distintos en una columna. Una columna de "Género" (M/F) tiene baja cardinalidad, mientras que un "DNI" o "RFC" posee una cardinalidad altísima.
+2. **Selectividad:** Es la proporción de filas de la tabla que se espera que devuelva un filtro específico. Se calcula como:
+   $$\text{Selectividad} = \frac{\text{Cardinalidad de la condición}}{\text{Total de filas}}$$
+   * Una selectividad cercana a $1.0$ (o $100\%$) significa que el filtro devuelve casi toda la tabla.
+   * Una selectividad cercana a $0.0$ (o $0\%$) indica que el filtro es muy discriminatorio y devuelve una cantidad mínima de filas.
 
-### La Infalibilidad Arquitectónica de Índices Múltiples Compuestos y la Regla Cardenal del Prefijo Continuo Frontal (Leftmost Prefix Rule)
-Cuando la sofisticación asalta los filtros preestablecidos cruzados del desarrollo informático, rara vez se solventa una directriz asediando una columna única solitaria en el bloque lógico de peticiones WHERE. La indexación compuesta (un único super-árbol híbrido cimentando e incrustando cadenas concatenadas desde 2 hasta 16 esferas asimétricas superpuestas en conjunción totalizada) resplandece dotando y cubriendo a los escenarios de consultas de flujos masivos de cruces de la base matriz de una robustez invulnerable al hardware en su capa del bloque primario B-Tree general. Pero forjar una conjunción híbrida obedece matemáticamente bajo una rigidez doctrinaria subyacente obligatoria para los SGBD referida inamoviblemente como el principio insalvable y dictatorial de la **Regla de Correspondencia de los Prefijos Perimetrales más a la Izquierda (Leftmost Prefix Rule)**42.  
-En la orquestación y creación constituyente del árbol B+ general del tipo:
+```sql
+-- Caso 1: Selectividad excelente (cercana a 0%)
+SELECT * FROM usuarios WHERE dni = '12345678A'; -- El optimizador usará el índice de inmediato.
 
-SQL  
-CREATE INDEX super_indice_jerarquico ON Tabla_Central (Pais, Estado_Ciudad, Edad_Registro);
+-- Caso 2: Selectividad deficiente (cercana a 85%)
+SELECT * FROM ordenes WHERE entregado = TRUE; -- Si el 85% de las órdenes están entregadas, el optimizador ignorará el índice y preferirá un escaneo secuencial (Full Scan) para evitar el costo de accesos aleatorios (Random I/O).
+```
 
-El compilador y ordenador somete los eslabones en prioridades draconianas incrustando las columnas en conjunciones macro-superpuestas. A nivel conceptual y semántico físico, el compilador cimentará toda jerarquía segmentando primigeniamente todas las ramas por Pais. Posteriormente a este estrato, cada subdivisión idéntica preexistente se estratifica subsecuentemente ordenando la subcategoría interna agrupándoles en cascada colindante interna dependiente subordinada en Estado_Ciudad. Finalmente, aquellos encadenamientos con igualdades en ambos estratos primigenios resultan en sub-niveles y peldaños jerárquicos ordenados minuciosamente bajo la premisa de la Edad_Registro de la columna de cimiento profundo.  
-La Ley Magna de la regla dictamina que un optmizador y gestor transaccional SGBD tan solo obtendrá el aval, soporte e impulsión directriz del flujo perimetral asimétrico si se satisfacen y correlacionan a nivel de cláusulas los términos referenciales, sin admitir una desvinculación a partir de los encadenamientos ordenados frontales preexistentes desde la parte más lejana adosada en el sector izquierdo hacia el derecho continuo perimetral interno estructural de los encadenamientos subyacentes lógicos dictados sin sufrir rupturas de eslabón ausente.  
-Bajo esta estricta doctrina impuesta sistémica general estructural y funcional del árbol del ejemplo asimilado:  
-El Optimizador **garantiza uso integral o parcial del índice orgánico pleno** si los frentes lógicos se adosan invocando a nivel peticional de lectura:
+<Callout type="warning">
+**Estadísticas obsoletas:** Si las estadísticas del optimizador no están actualizadas (tarea gestionada por procesos como `ANALYZE` en PostgreSQL), se produce una *Deriva de Estimación (Row-Estimate Drift)*, lo que lleva al optimizador a tomar malas decisiones (ej. realizar escaneos completos innecesarios o un uso ineficiente de índices).
+</Callout>
 
-* Búsqueda por Pais (Pilar A).  
-* Búsqueda por Pais combinado Estado_Ciudad (Pilar A encadenado continuo a Pilar B).  
-* Búsqueda entrelazando las ramificaciones correlativas absolutas de las tres asimetrías orgánicas y estructurales totales combinadas (Pilar A acoplado al B engastando al C).
+---
 
-El Árbol **fracasará desastrosamente, el optimizador desertará ignorando los caminos de indexados o generará barridos secuenciales nulos inoperantes parciales ciegos**, recayendo y rindiéndose a escaneos rudimentarios o secuencias forzosas cuando ocurren escisiones intermitentes y huecos ciegos inoperantes o grietas sistémicas estructurales por falta argumentativa en las peticiones en los estratos fronterizos:
+### Índices Compuestos y la Regla del Prefijo Izquierdo (*Leftmost Prefix Rule*)
 
-* Búsquedas invadiendo los peldaños finales del subnivel Edad_Registro omitiendo en el origen los frentes Pais y/o careciendo del aditamento Estado_Ciudad. El servidor yace enceguecido; ignora los montos pues subyacen esparcidos y acorralados dispersos entre todo paraguas general orgánico asimétrico no acotado ni enfocado frontal y superior de nivel general de país primero.  
-* Cadenas asimétricas filtrando un subconjunto dislocado y fracturado: Un embate del filtro sobre Pais conjuncionado a los estratos de Edad_Registro (Ignorando, omitiendo o abriendo en escisión y vacío central y núcleo omitiendo adosarlo o delimitar en paralelo Estado_Ciudad). La indexación enraizada surtirá parcialidades mitigando solo la frontera externa superior asilada e incrustando el vector a Pais, forzando entonces imperativamente de manera paralela a someter al nodo hoja subyacente bajo a pesadas purgas y travesías lógicas o barridos escrutadores secuenciales paralelos incesantes en los estadios ulteriores ya que el estrato subyacente inferior remanente acopla disparidades generalizadas por falta de supresor vinculante.
+Un índice compuesto es una estructura única estructurada jerárquicamente sobre múltiples columnas (de 2 a 16 campos).
 
-Un aditamento fatal y severo adjunto y correlacionado colateral de la Ley Estructural dicta el comportamiento errático en flujos que conllevan el uso del componente u operador asimétrico delimitador de cotas abiertas (Rangos numéricos relacionales y algebraicos: \>, \<, BETWEEN, LIKE 'abc%'). El decreto algorítmico asume un acote violento: El prefijo de correlación secuencial encadenado válido y orgánicamente enrutable a nivel sistémico utilizable de manera rápida a un plano transversal del árbol colapsa abrupta, rígida, total e irremediablemente de manera irrecuperable de uso orgánico superior algorítmico en la coyuntura del milisegundo o etapa inicial al topar contra a un primer operador algebraico delimitativo posicional o desigualdad en sus parámetros estructurales y lógicos acotados en el dictamen perimetral dictado en la búsqueda general transaccional transversal operativa algorítmica profunda final. Por ello se establece un axioma vital e inviolable: Las agrupaciones del árbol (B-Tree Column Ordering) demandan de los arquitectos que las conjunciones o los cruces algebraicos perimetrales y comparaciones regidas inamoviblemente en igualdad estricta booleana identitaria (=, IN) operen y ocupen la jerarquía del ala o lateral frontal a la Izquierda en el acote definitorio del compilado DDL de prioridad mayor y más rigurosa, desplazando siempre a aquellas colindantes variables numéricas, fechas continuas con operabilidad matemática o cadenas abiertas asimétricas limitantes encadenadas sometidas a acotes algorítmicos comparativos de rango numérico y relacional a las derivas, estadios perimetrales profundos y finales últimos en la cadena orgánica compositiva e intrínseca sintáctica lateral diestra.
+```sql
+-- Creación de un índice compuesto
+CREATE INDEX idx_ubicacion_clientes 
+ON clientes (Pais, Estado_Ciudad, Edad);
+```
 
-### Excelencia Resolutiva: Escaneos Exclusivos al Índice (Covering Indexes) e Inspección Profunda (EXPLAIN ANALYZE)
-Un baluarte táctico o maniobra estructural perimetral sublime para coronar los esfuerzos orgánicos recae y encarna bajo las facultades operativas del acoplamiento perimetral del término denominado genéricamente como un **Índice con Recubrimiento General o Índice de Cobertura Frontalizada (Covering Index)**41. Un ecosistema o consulta converge a dicho título honroso cundo se requiere una travesía orgánica extractora donde el compendio integral final dictado por la requisitoria subyacente del sistema cliente del programa aplicativo y delineado textualmente a extraer en el perímetro de clausulas de devolución de salidas visualizadas (por ej. SELECT A, B, C), subsiste lícitamente resguardado al amparo general empotrado orgánicamente de forma subyacente íntegra encapsulada como claves del nodo en las enraizadas bases inferiores y folículos hojosos terminales dentro de una conjunción secundaria paralela apartada, sin disolución de variables o excepciones foráneas faltantes por recuperar relacionales adosadas.  
-Confrontando y vislumbrando esta fortuita maravilla estocástica perimetral subyacente analítica integral en las ramificaciones, el pre-optimizador evalúa el cese de los engorrosos trasbordos sistémicos secundarios dictaminando una absolución operativa de tiempo de recarga en RAM masiva generalizada y asimila un desvío y atajo superador orgánico perimetral e integral de salto a Heaps crudos u organizaciones centrales paralizando a niveles colosales o Heaps paralelos, transmutando el comando e invocando magistralmente y resolviendo una recolección cruda terminal sin requerimientos o lecturas a datos bases orgánicas mediante un acto invulnerable denominado técnica o conceptualmente **Escaneo Exclusivo Restringido de Índice Terminal (Index-Only Scan)**20.  
-El ensanchar un árbol ciegamente arrastra deficiencias masivas limitando los puntales enlazados asimétricos o claves estructurales en los márgenes limitantes de RAM de los arreglos o punteros del nodo mermando de su fanout al mínimo. Los ecosistemas precursores como SQL Server y Postgres introdujeron la prerrogativa del parámetro funcional perimetral orgánico inclusivo de hojas post-acoplamiento sintáctico **INCLUDE**16.
+#### Mecánica de Almacenamiento Jerárquico
+El motor ordena los registros siguiendo estrictamente el orden de las columnas de izquierda a derecha:
+1. Primero ordena físicamente por `Pais`.
+2. Dentro de cada `Pais`, los registros se ordenan por `Estado_Ciudad`.
+3. Finalmente, si hay valores idénticos en ambos campos, se ordenan por `Edad`.
 
-SQL  
-CREATE INDEX idx_recaudacion_anual_fija ON Ordenes_Grales (Region_Ventas_Cod, Numero_Identificador_Personal) INCLUDE (Monto_Monetario, Nombre_Operador);
+#### La Regla del Prefijo Izquierdo
+El optimizador **solo puede utilizar** este índice si el filtro de la consulta incluye la columna inicial (el extremo izquierdo) de la definición del índice.
 
-Esta soberbia orden estipula directivamente a la máquina compilar los peldaños del enrutador de B-Tree valiéndose exclusiva e inflexiblemente guiado y limitado jerárquico céntrico de travesía en Region_Ventas_Cod correlacionado o sumado a Numero_Identificador_Personal. Pero engarza un anexo furtivo silencioso pasivo de nulo peso de estructuración matemática pero alto acote y valía comercial y sistémica recabado de copias lícitas mudas de las celdas al remanente al fondo oscuro del nivel inferior hoja adjunto terminal acarreando y soportando inofensivamente valores mudos Monto_Monetario e inamovibles Nombre_Operador adjuntos pasivos incrustados como fardos marginales en las hojas silenciadas de variables secundarias remanentes. Frente a exigencias relacionales extractivas o consultas del software central asediando por montos u operadores de sectores de adosamiento focalizados a esa travesía acotada combinada perimetral orgánica superior dictada, los requerimientos sistémicos quedan íntegra instantánea inmediata y fugazmente mitigados desterrando una intrusión a la costosa base magnética o tabla profunda del sistema con E/S masivos latentes o nulos.  
-La convalidación empírica y aseveración algorítmica y diagnóstica cruda y analítica del ingeniero excede la teoría perimetral estipulada; depende perentoria y unívocamente del sondeo sistémico interrogativo orquestando de manera paralela un espionaje interceptor e injerencia subyacente crudo general a la máquina: El aditamento semántico pre-orden EXPLAIN u homólogo visual en SQL Server de visualizaciones XML para trazos perimetrales profundos. Despojando los aditamentos lógicos la pre-clausula de diagnóstico provee estimaciones relativas operacionales y algorítmicas al paso o escalafón orgánico subyacente arrojado que dictará la maquina preestableciendo el camino primario u hoja general adoptado entre (Sec_Scan, un barrido masivo; un Index Scan, un barrido cruzado en trazos y punteros crudos; o un Index-Only Scan limpio). Las presunciones o dictaminaciones estimadas matemáticas relativas a ciegas subyacen asiladas estipulando una fantasía de las tablas preestablecidas o falsas. Es obligatorio requerir a escenarios presurizados o críticos de producción y en vivo invocar un espionaje hipercrítico forzado y un test de estrés analítico empírico a fuego dictaminado ejecutando o materializando al sistema una suborden correlativa final anexa: EXPLAIN ANALYZE (O directivas STATISTICS XML ON integrales en sistemas Windows paralelos) el cual compele e impele forzosa y abrumadoramente en frío al ordenador a transitar la faena matemática cursando el requerimiento en vivo asediando y castigando bajo hardware el bloque para extraer y desnudar la estadística latente y cruda de tiempo en mili-segundos de cada tramo o enramado de recuento de colisiones absolutas. Dicha exhumación confrontada permite acotar, diagnosticar y desmitificar latencias inoperantes reveladas masivas en los algoritmos causales primarios, exponiendo colapsos de orden u oscuras falencias e inoperancia estadística de la máquina conocida como o nombrada sistémicamente bajo la inoperancia paralela de derrape sistémico o "Deriva de Cardinalidad / Row-Estimate Drift" la cual empaña abrumadoramente los nodos erradicando un desempeño lícito orgánico dictado paralizando masivamente y de manera destructiva abrumadora a la producción por estancamientos crudos erráticos paralelos falsos que desatienden a los árboles inyectados propiciados por frentes de estadísticas corrompidas de estimación temporal paralela del sistema relacional base.
+* **Consultas que SÍ usan el índice:**
+  * `WHERE Pais = 'México'` (Usa el prefijo `Pais`)
+  * `WHERE Pais = 'México' AND Estado_Ciudad = 'CDMX'` (Usa `Pais` y `Estado_Ciudad`)
+  * `WHERE Pais = 'México' AND Estado_Ciudad = 'CDMX' AND Edad = 30` (Usa el índice completo)
+* **Consultas que NO usan el índice (o lo usan ineficientemente):**
+  * `WHERE Estado_Ciudad = 'CDMX'` (Falla catastróficamente; ignora el índice porque falta la columna guía `Pais`).
+  * `WHERE Pais = 'México' AND Edad = 30` (Usa el índice parcialmente para filtrar `Pais`, pero requiere realizar un escaneo interno para `Edad` debido a la ausencia de `Estado_Ciudad`).
+
+#### El Impacto de los Operadores de Rango
+Cuando se aplica un filtro de rango (`>`, `<`, `BETWEEN`, `LIKE 'abc%'`), el orden jerárquico se rompe a partir de esa columna, y los campos a su derecha en el índice no podrán ser utilizados para la búsqueda directa.
+
+<Callout type="info">
+**Axioma de Diseño:** Al crear índices compuestos, coloca siempre a la izquierda las columnas que se consultarán mediante comparaciones de igualdad estricta (`=`, `IN`), y a la derecha las columnas que usarán operadores de rango (`>`, `<`, `BETWEEN`).
+</Callout>
+
+---
+
+### Índices de Cobertura (*Covering Indexes*) y la Cláusula `INCLUDE`
+
+Un **Índice de Cobertura (Covering Index)** es aquel que contiene todas las columnas requeridas por una consulta (tanto en el `SELECT` como en el `WHERE` y `JOIN`).
+
+Si el índice cubre por completo la consulta, el optimizador aplica un **Escaneo Exclusivo de Índice (Index-Only Scan)**, evitando descender a la tabla base (Heap o tabla agrupada) para recuperar datos adicionales.
+
+```sql
+-- Si consultamos solo columnas indexadas:
+SELECT Pais, Estado_Ciudad FROM clientes WHERE Pais = 'México';
+-- Ejecuta un Index-Only Scan directo desde la memoria caché, con rendimiento estelar.
+```
+
+#### Optimización con la Cláusula `INCLUDE` (PostgreSQL / SQL Server)
+Permite adjuntar columnas de datos directamente en los nodos hoja del árbol B+, sin utilizarlas para ordenar el índice ni participar en la estructura del árbol.
+
+```sql
+CREATE INDEX idx_clientes_busqueda 
+ON clientes (email) 
+INCLUDE (nombre, telefono);
+```
+
+* **Ventaja:** El árbol se mantiene ligero y con un alto *fanout* (ya que no se ordena por `nombre` o `telefono`), pero permite responder consultas que pidan estos datos mediante un *Index-Only Scan* sin recurrir a la tabla física.
+
+---
+
+### Diagnóstico de Consultas: `EXPLAIN` y `EXPLAIN ANALYZE`
+
+La validación del diseño de índices no debe ser teórica; debe auditarse directamente en el motor:
+
+* **`EXPLAIN`:** Muestra la ruta planificada por el optimizador y el costo estimado en base a estadísticas.
+* **`EXPLAIN ANALYZE`:** Ejecuta la consulta en tiempo real, midiendo los milisegundos exactos consumidos en cada paso del plan y el número real de filas procesadas.
+
+Esto permite identificar cuellos de botella y desajustes de cardinalidad entre las estimaciones estadísticas y el comportamiento real del motor de almacenamiento.

@@ -14,52 +14,101 @@ sandbox:
   dataset: biblioteca
 ---
 
-El arsenal operativo del álgebra relacional se clasifica tomando en cuenta el número de conjuntos de entrada que los operadores requieren (clasificación por aridad: unarios o binarios) y según la naturaleza epistemológica de los mismos, distinguiendo entre los primitivos originados en la teoría axiomática de conjuntos y los específicamente derivados para modelar el esquema relacional. Las operaciones fundamentales determinan la capacidad computacional de la base de datos, mientras que las operaciones derivadas proporcionan atajos y simplificaciones semánticas.
+El arsenal operativo del álgebra relacional se clasifica según el número de relaciones de entrada (unarios o binarios) y su origen epistemológico (primitivos de la teoría de conjuntos o específicos del modelo relacional).
 
-| Grupo de Operación | Operador Matemático y Símbolo | Naturaleza y Mecanismo Funcional | Dependencia Semántica |
-| :---- | :---- | :---- | :---- |
-| **Operadores Unarios** | Selección / Restricción (![Notación algebraica](/content/modelo-relacional/image2.png)) | Ejecuta una partición horizontal en la relación basándose en un predicado lógico de filtrado. | Primitivo, específico relacional |
-|  | Proyección (![Notación algebraica](/content/modelo-relacional/image3.png)) | Efectúa una partición vertical extrayendo columnas específicas y garantizando la eliminación algorítmica de duplicados. | Primitivo, específico relacional |
-|  | Renombramiento (![Notación algebraica](/content/modelo-relacional/image4.png)) | Renombra el vector lógico temporal y/o muta la declaración de las columnas para evitar colisiones. | Primitivo, específico relacional |
-| **Operadores Binarios Conjuntistas** | Unión (![Notación algebraica](/content/modelo-relacional/image5.png)) | Consolida tuplas presentes en ambas relaciones, colapsando redundancias de los superconjuntos. | Primitivo, Teoría de Conjuntos |
-|  | Intersección (![Notación algebraica](/content/modelo-relacional/image6.png)) | Aísla y extrae la superposición de tuplas coetáneas en ambas relaciones matrices. | Derivado, Teoría de Conjuntos |
-|  | Diferencia / Resta (![Notación algebraica](/content/modelo-relacional/image7.png)) | Resta sustractivamente las tuplas del sustraendo sobre la matriz del minuendo. | Primitivo, Teoría de Conjuntos |
-|  | Producto Cartesiano (![Notación algebraica](/content/modelo-relacional/image8.png)) | Multiplica cruzadamente todas y cada una de las tuplas para forjar permutaciones masivas. | Primitivo, Teoría de Conjuntos |
-| **Operadores Binarios Específicos** | Reunión o Join (![Notación algebraica](/content/modelo-relacional/image9.png)) | Concatena atributos evaluando conectores condicionales y preposiciones lógicas asociativas. | Derivado relacional |
-|  | División Relacional (![Notación algebraica](/content/modelo-relacional/image10.png)) | Examina asociaciones exhaustivas bajo restricciones de cuantificadores universales. | Derivado relacional |
+Las operaciones fundamentales determinan la capacidad computacional de la base de datos, mientras que las operaciones derivadas proporcionan atajos semánticos.
 
+| Grupo de Operación | Operador y Símbolo | Naturaleza y Mecanismo Funcional | Dependencia Semántica |
+| :--- | :--- | :--- | :--- |
+| **Operadores Unarios** | Selección / Restricción ($\sigma$) | Partición horizontal de una relación según un predicado lógico de filtrado. | Primitivo, específico relacional |
+| | Proyección ($\pi$) | Partición vertical extrayendo columnas específicas y eliminando duplicados. | Primitivo, específico relacional |
+| | Renombramiento ($\rho$) | Renombra la relación resultante o sus columnas para evitar colisiones. | Primitivo, específico relacional |
+| **Operadores Binarios Conjuntistas** | Unión ($\cup$) | Consolida tuplas presentes en ambas relaciones, colapsando redundancias. | Primitivo, Teoría de Conjuntos |
+| | Intersección ($\cap$) | Extrae las tuplas presentes simultáneamente en ambas relaciones. | Derivado, Teoría de Conjuntos |
+| | Diferencia / Resta ($-$) | Sustrae las tuplas del segundo operando de las de la primera relación. | Primitivo, Teoría de Conjuntos |
+| | Producto Cartesiano ($\times$) | Multiplica cruzadamente todas las tuplas para forjar todas las combinaciones posibles. | Primitivo, Teoría de Conjuntos |
+| **Operadores Binarios Específicos** | Reunión o Join ($\bowtie$) | Concatena atributos evaluando conectores condicionales y preposiciones lógicas. | Derivado relacional |
+| | División Relacional ($\div$) | Busca asociaciones exhaustivas bajo restricciones de cuantificadores universales. | Derivado relacional |
 
-Los operadores unarios aplican transformaciones vectoriales asimilando una única relación como estímulo de entrada. Constituyen las herramientas de refinamiento más recurrentes, operando usualmente en las ramificaciones periféricas inferiores del árbol de la consulta con el objeto de menguar el volumen bruto de la data antes de incurrir en costosas conjunciones.  
-La operación de **Selección o Restricción** (![Notación algebraica](/content/modelo-relacional/image2.png)) funciona como un filtro granulado que genera una partición diametral u horizontal de la relación. El operador es parametrizado a través de una expresión de predicado de selección o condición lógica, que debe arrojar un resultado booleano exacto al ser evaluada contra cada tupla del cuerpo relacional. La nomenclatura matemática se formula como ![Notación algebraica](/content/modelo-relacional/image11.png)6. Dicha condición puede forjarse engarzando componentes de complejidad escalable: atributos comparados con constantes alfanuméricas (![Notación algebraica](/content/modelo-relacional/image12.png)), atributos cotejados con otros atributos paralelos de la misma tupla (![Notación algebraica](/content/modelo-relacional/image13.png)), y la intrincada aglomeración de estos mediante el uso estricto de nexos booleanos preposicionales (![Notación algebraica](/content/modelo-relacional/image14.png)) junto a la priorización por medio de paréntesis algebraicos. Por naturaleza, la cardinalidad o volumen numérico resultante tras una selección será siempre inferior o, en el caso limítrofe de ausencia de eliminación, idéntica a la cardinalidad del conjunto de partida.  
-Complementariamente, la operación de **Proyección** (![Notación algebraica](/content/modelo-relacional/image3.png)) aborda el refinamiento dimensional desde un eje vertical. La proyección es esencial debido a que los diseños esquemáticos empresariales suelen incorporar docenas de propiedades que en un contexto particular pueden resultar superfluas. Al invocar la sintaxis ![Notación algebraica](/content/modelo-relacional/image15.png), el motor segrega transversalmente la matriz, suprimiendo cualquier columna que no figure en la especificación. Un fenómeno matemático distintivo ocurre durante la proyección: si al cercenar los atributos diferenciadores (como la clave primaria) emergen en la matriz temporal dos o más tuplas con configuraciones de valores absolutamente equiparables, la obligación adherente a la teoría de conjuntos dictamina que los componentes iterados sean absorbidos y reducidos a una sola expresión. Por ende, la proyección no solo decrementa el grado de la relación, sino que habitualmente reduce su cardinalidad.  
-El **Renombramiento** (![Notación algebraica](/content/modelo-relacional/image4.png)), ocasionalmente subestimado en entornos teóricos básicos, es el pegamento lógico que permite la anidación funcional del álgebra. Su notación principal permite transmutar la denominación intrínseca de una relación, alterando su designación base y el título estricto de todos sus atributos para facilitar correlaciones posteriores. Resulta fundamental al operar el producto de una relación contra sí misma (por ejemplo, para relacionar a un empleado con su empleado supervisor en la misma jerarquía matricial), previniendo que los campos generados incurran en colisiones semánticas irreparables o errores de ambigüedad dentro de las tuplas fusionadas.
+---
 
-### Operaciones Binarias Asimiladas de la Teoría de Conjuntos
-La herencia axiomática matemática resplandece en las operaciones diádicas provenientes de la lógica de conjuntos. No obstante, para garantizar que la rigidez estructurada de las relaciones persista inalterada, la mayor parte de estas acciones impone una precondición determinante: la de las relaciones de **unión compatible**6. Dos relaciones se catalogan como isomórficamente compatibles (o compatibles de tipo) si, y de forma ineludible, cuentan con idéntico grado (mismo conteo numérico de columnas) y si la tipología posicional concuerda, es decir, el dominio adscrito al n-ésimo atributo de la primera relación guarda correspondencia irrestricta con el n-ésimo dominio de la segunda relación.  
-La operación de **Unión** (![Notación algebraica](/content/modelo-relacional/image16.png)) adosa matemáticamente ambos conjuntos, asegurando que la matriz de egreso contenga todas y cada una de las tuplas detectadas en el conjunto matricial originario, en el secundario, o en los dos recíprocamente. Cualquier paralelismo exhaustivo es neutralizado debido a la naturaleza insular de los conjuntos formales.  
-La **Intersección** (![Notación algebraica](/content/modelo-relacional/image17.png)), en cambio, es un acto de exclusión selectiva en la que únicamente las formaciones tuplares que logran ser identificadas idénticamente y de manera coetánea en ambos sistemas sobreviven al escrutinio formal. Dado que el álgebra procura el compendio mínimo de primitivas matemáticas que confieran integridad de Turing al modelo, la intersección es con frecuencia catalogada como una operación espuria o derivativa, puesto que puede ser sintetizada mediante la interposición doble de diferencias de conjuntos, a saber, ![Notación algebraica](/content/modelo-relacional/image18.png)6.  
-La **Diferencia de Conjuntos** (![Notación algebraica](/content/modelo-relacional/image19.png)) actúa como un sustractor vectorial asimétrico. Emite una relación configurada por todas aquellas secuencias tuplares latentes en el operando inicial (![Notación algebraica](/content/modelo-relacional/image20.png)) que carecen absolutamente de representación clónica en el operando final (![Notación algebraica](/content/modelo-relacional/image21.png)). Contrariamente a los entes algebraicos previos que gozan de la propiedad conmutativa, la diferencia es fundamentalmente sensible al orden posicional, garantizando que el minuendo dictamine la naturaleza direccional de la sustracción.  
-El operador que diverge abiertamente respecto a las condiciones de amoldamiento previo es el **Producto Cartesiano** (Cross Join o Concatenación Cruzada, simbolizado como ![Notación algebraica](/content/modelo-relacional/image8.png)). Su implementación obvia las exigencias restrictivas de la compatibilidad e infiere un acoplamiento multiplicativo expansivo. La ecuación ![Notación algebraica](/content/modelo-relacional/image22.png) concatena individualmente cada hilo posicional radicado en ![Notación algebraica](/content/modelo-relacional/image20.png) de forma recurrente con la inmensidad estática del contingente ![Notación algebraica](/content/modelo-relacional/image21.png)5. El peaje por esta conmutación total se refleja en los cuadrantes asintóticos, originando que el esquema emergente posea una magnitud de grado sumativa (![Notación algebraica](/content/modelo-relacional/image23.png)) y una cardinalidad explosiva y de costo elevadísimo, dictada por el factor geométrico (![Notación algebraica](/content/modelo-relacional/image24.png)). Salvo raras construcciones demostrativas sin propósito correlacional, el producto cartesiano es una infraestructura puente; un estadio transitorio que adquiere sentido y cohesión analítica únicamente tras ser tamizado por un operador selector restrictivo posterior.
+### Operadores Unarios
 
-### Operadores Derivados Específicos y Manipulaciones Complejas
-El repertorio lógico de Codd consolidó operadores derivados singulares que codifican los paradigmas de interpelación más reiterados, brindando constructos atómicos con profunda resonancia semántica y computacional en la arquitectura de recuperación.  
-El **Join o Reunión** (![Notación algebraica](/content/modelo-relacional/image9.png)), en todo su abanico tipológico, conforma la cúspide operativa orientada a reensamblar información lógicamente desmenuzada. Debido al apego de diseño relacional para diluir la redundancia de datos por medio de la normalización progresiva, la correlación transversal es vital. La variación arquetípica, el Theta-Join (![Notación algebraica](/content/modelo-relacional/image25.png)), se cristaliza lógicamente como un producto cartesiano superpuesto a un filtro lógico riguroso dictado por ![Notación algebraica](/content/modelo-relacional/image26.png); formalizado mediante el postulado ![Notación algebraica](/content/modelo-relacional/image27.png)6. Si las estipulaciones interrelacionadas se erigen preponderantemente por igualdades (e.g. equiparación de Claves Foráneas respecto a sus dependencias Maestras Primarias), el constructo se particulariza hacia el Equi-Join. Por su parte, la amalgama de mayor abstracción en la familia de reuniones es el **Join Natural** (denominado ![Notación algebraica](/content/modelo-relacional/image28.png) o ![Notación algebraica](/content/modelo-relacional/image9.png) carente de formulaciones paramétricas). Este autómata escudriña asiduamente esquemas comparativos en búsqueda de vectores con nomenclatura coincidente, materializando interconexiones equitativas tácitas, seguidas ineludiblemente por una proyección invisible orientada a la extirpación definitiva de las columnas gemelas. Existen expansiones cruciales, conocidas como uniones externas (Outer Joins: Left, Right y Full), que previenen el descarte algorítmico de los registros asimétricos, acomodando valores nulos en el remanente espacial de la tupla divergente para mantener la visibilidad íntegra de las entidades disidentes.  
-De las ramificaciones funcionales concebidas, la **División Relacional** (![Notación algebraica](/content/modelo-relacional/image29.png)) es innegablemente la que aglomera mayores niveles de abstracción procedimental. Está expresamente dispuesta para disipar acertijos relacionales sustentados en la universalidad lógica, aquellos que semánticamente incorporan el cuantiﬁcador universal "Para todo" (![Notación algebraica](/content/modelo-relacional/image30.png)). Es útil en interrogatorios analíticos análogos a: "Discernir nominalmente la población estudiantil que ha concluido satisfactoriamente la totalidad de las materias tipificadas dentro del conjunto restrictivo del pénsum de grado"26. Dada una matriz aglomerante de dividendos ![Notación algebraica](/content/modelo-relacional/image31.png) y la especificación de un filtro universal divisor constituido por el esquema ![Notación algebraica](/content/modelo-relacional/image32.png), la división germinará un cociente algebraico riguroso constituido por el extracto matricial ![Notación algebraica](/content/modelo-relacional/image33.png) cuyas componentes han constatado una vinculación afirmativa, inexorable y recurrente con la absoluta totalidad de iteraciones subyacentes alojadas en la relación referencial ![Notación algebraica](/content/modelo-relacional/image21.png)6.  
-La belleza procedimental del álgebra se enaltece al reconocer que el engranaje de la división se disecciona acudiendo, inexorablemente, a las primitivas fundamentales estipuladas. Su demostración y emulación algorítmica procede con estrictez mediante el descarte de las anomalías correlacionales:
+Se aplican sobre una única relación. Son las herramientas de refinamiento más recurrentes, útiles para reducir el volumen de datos antes de realizar operaciones costosas.
 
-1. Se forja el ecosistema primario de candidatos extrayendo todos los exponentes del dominio meta que orbitan en el universo: ![Notación algebraica](/content/modelo-relacional/image34.png)6.  
-2. Se materializa un horizonte modélico y simulado pergeñando una intersección exhaustiva e indiscriminada, concatenando la totalidad de candidatos plausibles con los mandatos irrenunciables presentes en la especificación del divisor: ![Notación algebraica](/content/modelo-relacional/image35.png). Esta matriz es el ideal irrefutable de correspondencia total.  
-3. Procedemos a detectar la divergencia computando la brecha disonante entre la modelización matemática y el estado factual de la base de datos: ![Notación algebraica](/content/modelo-relacional/image36.png). Los vectores emergentes constituyen los registros residuales defectuosos, aquellos hilos que, tras el escrutinio cruzado, evidenciaron falencias e incumplimiento de la asociación requerida.  
-4. Se aíslan temporalmente a los componentes transgresores extrayendo sus identidades: ![Notación algebraica](/content/modelo-relacional/image37.png). Concluyentemente, se infiere el postulado universal asimilando el residuo tras defenestrar de la totalidad a los desertores: ![Notación algebraica](/content/modelo-relacional/image38.png). Así, solo subsisten inmutables quienes cumplieron imperativamente con el requerimiento universal.
+* **Selección ($\sigma$):** Funciona como un filtro horizontal. Se define como:
+  $$\sigma_{\text{condición}}(R)$$
+  La condición es un predicado booleano que puede contener atributos, constantes y operadores de comparación ($=, \neq, <, >, \le, \ge$) unidos por nexos lógicos ($\land, \lor, \neg$).
+  * *Ejemplo:* Filtrar empleados del departamento de ventas: $\sigma_{\text{depto} = \text{'Ventas'}}(\text{Empleados})$.
+* **Proyección ($\pi$):** Realiza un filtrado vertical. Se define como:
+  $$\pi_{A_1, A_2, \dots, A_n}(R)$$
+  Extrae únicamente los atributos indicados. Debido a la teoría de conjuntos, si al eliminar columnas identificadoras (como llaves primarias) surgen tuplas duplicadas, estas se reducen automáticamente a una sola instancia.
+  * *Ejemplo:* Listar solo nombres y salarios: $\pi_{\text{nombre, salario}}(\text{Empleados})$.
+* **Renombramiento ($\rho$):** Permite cambiar el nombre de una relación resultante o de sus atributos. Se define como:
+  $$\rho_{S(B_1, B_2, \dots, B_n)}(R)$$
+  Es crucial para evitar colisiones de nombres, especialmente al realizar operaciones cruzadas de una relación consigo misma (self-join).
+
+---
+
+### Operadores Binarios Conjuntistas
+
+Provienen de la lógica de conjuntos. Para que las operaciones de **Unión**, **Intersección** y **Diferencia** sean válidas, las relaciones deben ser **unión-compatibles**:
+1. Tener exactamente el mismo grado (mismo número de columnas).
+2. Los dominios de las columnas correspondientes deben ser compatibles de izquierda a derecha.
+
+* **Unión ($\cup$):** Adosa ambos conjuntos de tuplas.
+  $$R \cup S$$
+  Produce una relación con todas las tuplas que están en $R$, en $S$, o en ambas, eliminando duplicados.
+* **Intersección ($\cap$):** Conserva solo las tuplas presentes de manera simultánea en ambas relaciones.
+  $$R \cap S$$
+  Es un operador derivado; se puede definir usando la diferencia: $R \cap S = R - (R - S)$.
+* **Diferencia ($-$):** Sustractor asimétrico.
+  $$R - S$$
+  Produce una relación con todas las tuplas que están en $R$ pero no en $S$. Es sensible al orden de los operandos (no conmutativo).
+* **Producto Cartesiano ($\times$):** Combina todas las tuplas del primer operando con todas las tuplas del segundo. No requiere compatibilidad de unión.
+  $$R \times S$$
+  * *Grado resultante:* Sumativo ($Grade(R) + Grade(S)$).
+  * *Cardinalidad resultante:* Multiplicativa ($Card(R) \times Card(S)$).
+  * Generalmente es un paso intermedio que requiere un filtrado posterior para adquirir sentido práctico.
+
+---
+
+### Operadores Derivados Específicos
+
+#### 1. Reunión (Join, $\bowtie$)
+Orquestado para reensamblar información normalizada distribuida en múltiples relaciones.
+
+* **Theta-Join ($R \bowtie_{\theta} S$):** Equivale a un producto cartesiano seguido de una selección según el predicado $\theta$:
+  $$R \bowtie_{\theta} S = \sigma_{\theta}(R \times S)$$
+* **Equi-Join:** Variante del Theta-Join donde el operador de comparación del predicado $\theta$ es la igualdad ($=$).
+* **Join Natural ($R \bowtie S$):** Autómata que evalúa automáticamente la igualdad en los atributos con nombres idénticos entre ambas relaciones, eliminando las columnas duplicadas de forma implícita.
+* **Outer Joins (Left, Right, Full):** Evitan la pérdida de información de tuplas que no tienen correspondencia en la otra relación, rellenando las columnas faltantes con marcadores nulos (`NULL`).
+
+#### 2. División Relacional ($\div$)
+Diseñado para resolver consultas complejas que involucran cuantificación universal ("para todo", $\forall$).
+
+* *Ejemplo:* "Obtener los alumnos que han aprobado todos los cursos obligatorios".
+* Si tenemos una relación dividendo $R(X, Y)$ y un divisor $S(Y)$, la división produce $R \div S$ con esquema $X$ tal que para cada valor de $X$ en el resultado, existe una tupla $(x, y)$ en $R$ para cada $y$ en $S$.
+
+##### Simulación algorítmica con operadores primitivos:
+Para calcular $R(X, Y) \div S(Y)$:
+1. **Obtener candidatos:** Extraer todos los valores posibles de la parte meta $X$:
+   $$T_1 = \pi_X(R)$$
+2. **Construir el escenario ideal:** Cruzar todos los candidatos con el divisor para crear todas las combinaciones teóricamente requeridas:
+   $$T_2 = \pi_X(R) \times S$$
+3. **Detectar faltantes:** Encontrar qué combinaciones ideales no existen realmente en nuestra relación original:
+   $$T_3 = T_2 - R$$
+4. **Filtrar transgresores:** Restar del total de candidatos a aquellos que demostraron tener combinaciones faltantes:
+   $$\text{Resultado} = \pi_X(R) - \pi_X(T_3)$$
 
 ## Practica guiada
 
 <Callout title="Cierre relacional">
-Toda operacion algebraica valida produce una nueva relacion. Esa propiedad permite encadenar seleccion, proyeccion y reunion en arboles de consulta.
+Toda operación algebraica válida produce una nueva relación. Esta propiedad permite encadenar selección, proyección y reunión en árboles de consulta.
 </Callout>
 
-<ExerciseBlock title="De algebra a SQL">
-Traduce una seleccion seguida de proyeccion sobre la tabla de libros: filtra por anio y muestra solo titulo y autor.
+<ExerciseBlock title="De álgebra a SQL">
+Traduce una selección seguida de proyección sobre la tabla de libros: filtra por año y muestra solo título y autor.
 </ExerciseBlock>
 
 <SQLSandbox dataset="biblioteca" />

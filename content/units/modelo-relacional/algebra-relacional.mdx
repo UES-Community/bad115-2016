@@ -11,11 +11,36 @@ references:
   - unidad-1-ref-02
 ---
 
-El mero almacenamiento de vectores indexados sería fútil sin un formalismo diseñado explícitamente para extraer, conjugar y destilar información a partir de múltiples relaciones. El álgebra relacional proporciona dicho formalismo. Se define como un sistema matemático procedimental de alto nivel dotado de operandos y operadores, donde los operandos son invariablemente relaciones estructuradas, y los operadores son símbolos matemáticos diseñados para orquestar manipulaciones sobre dichas entidades.  
-La preeminencia teórica del álgebra relacional emana de su adhesión a la propiedad de clausura o cierre relacional. Este rasgo estipula que el producto o resultado de aplicar cualquier operador válido del álgebra relacional sobre una base de datos produce obligatoria y exclusivamente una nueva relación matemática. Las consecuencias prácticas del cierre relacional son inconmensurables: permite que las operaciones se compongan y aniden indefinidamente, posibilitando que el resultado intermedio de una proyección alimente inmediatamente el operando de una división, lo que a su vez se convierte en el insumo para una diferencia de conjuntos. Esta secuencialidad compositiva provee el cimiento para los árboles de ejecución lógica que los gestores de bases de datos interpretan en las canalizaciones de procesamiento de consultas.
+El mero almacenamiento de vectores indexados sería ineficaz sin un formalismo diseñado explícitamente para extraer, conjugar y destilar información a partir de múltiples relaciones. El álgebra relacional proporciona dicho formalismo: un sistema matemático procedimental de alto nivel dotado de operandos (relaciones estructuradas) y operadores (símbolos matemáticos que orquestan manipulaciones).
 
+---
 
-Dentro del ecosistema académico, el álgebra relacional es frecuentemente contrastada con el cálculo relacional. Si bien ambos se emplean para formular consultas exactas sobre el modelo relacional, operan bajo paradigmas diametralmente opuestos.  
-El cálculo relacional es un lenguaje esencialmente declarativo que encuentra su origen en el cálculo de predicados de la lógica de primer orden. En este paradigma, el analista se limita a formular una descripción matemática rigurosa de las propiedades que deben satisfacer las tuplas de respuesta, omitiendo deliberadamente especificar el procedimiento, la heurística o los pasos necesarios para localizar esos datos. El cálculo relacional se bifurca en dos ramificaciones teóricas dependiendo de si sus variables lógicas se asocian a tuplas enteras (Cálculo Relacional de Tuplas) o a atributos individuales (Cálculo Relacional de Dominios).  
-Por su parte, el álgebra relacional es un formalismo estrictamente procedimental. En el álgebra, la interpelación se construye formulando una coreografía detallada, especificando la sucesión algorítmica de los operadores y la manera precisa de obtener el conjunto de datos deseado, trazando una ruta de acceso desde las relaciones base hasta el resultado final.  
-A pesar de sus diferencias sintácticas y de aproximación, el famoso Teorema de Equivalencia de Codd demostró matemáticamente que el álgebra relacional pura y el cálculo relacional seguro poseen el mismo nivel de expresividad teórica; una consulta que pueda solventarse con un método, puede ser inexorablemente solventada con el otro, garantizando que cualquier afirmación lógicamente demostrable tiene un algoritmo relacional homólogo que la ejecute. No obstante, los arquitectos de los sistemas gestores de bases de datos (DBMS) contemporáneos han adoptado un enfoque mixto. Mientras que el Lenguaje de Consulta Estructurado (SQL) que redactan los desarrolladores se inspira sintácticamente en la naturaleza declarativa del cálculo relacional, los componentes internos de procesamiento, partición y optimización de los servidores traducen y expanden estas consultas hacia estructuras basadas firmemente en el álgebra relacional. Esta conversión es imperativa porque las estructuras de árbol del álgebra relacional permiten precomputar múltiples planes de ejecución, inyectar estimaciones de costos, e identificar redundancias de forma algorítmica, tareas que resultan intratables en las ecuaciones abstractas del cálculo relacional.
+### La Propiedad de Clausura (Cierre Relacional)
+
+La preeminencia teórica del álgebra relacional emana de su adhesión a la **propiedad de clausura**:
+* **Definición:** El resultado de aplicar cualquier operador válido del álgebra relacional sobre una o más relaciones produce obligatoria y exclusivamente una nueva relación matemática.
+* **Importancia práctica:** 
+  * Permite componer y anidar operaciones indefinidamente (ej. alimentar una proyección con el resultado de una selección y este con una unión).
+  * Provee el cimiento para construir los **árboles de ejecución lógica** que los motores de bases de datos procesan en sus canalizaciones internas.
+
+---
+
+### Álgebra Relacional vs. Cálculo Relacional
+
+Aunque ambos formalismos se emplean para consultar datos, operan bajo paradigmas opuestos:
+
+| Característica | Álgebra Relacional | Cálculo Relacional |
+| :--- | :--- | :--- |
+| **Paradigma** | Procedimental | Declarativo |
+| **Enfoque** | Especifica la coreografía y la sucesión algorítmica para obtener el resultado. | Describe las propiedades lógicas que deben cumplir las tuplas del resultado, sin decir cómo. |
+| **Fundamento** | Álgebra de conjuntos y operaciones específicas. | Lógica de predicados de primer orden. |
+| **Variantes** | Operadores unarios y binarios. | Cálculo Relacional de Tuplas (CRT) y de Dominios (CRD). |
+
+#### El Teorema de Equivalencia de Codd
+Demostró matemáticamente que el álgebra relacional pura y el cálculo relacional seguro poseen el **mismo nivel de expresividad teórica**:
+* Cualquier consulta expresable en uno puede ser resuelta de manera equivalente en el otro.
+
+#### Enfoque Híbrido en los DBMS Modernos
+Los motores de bases de datos actuales combinan ambos paradigmas:
+1. **Interfaz (SQL):** El desarrollador escribe sentencias SQL inspiradas en el carácter declarativo del *cálculo relacional*.
+2. **Procesamiento Interno:** El DBMS traduce y compila el SQL en un plan de ejecución basado en el *álgebra relacional*. Esta estructura de árbol es indispensable para inyectar estimaciones de costos, optimizaciones heurísticas y eliminar redundancias.

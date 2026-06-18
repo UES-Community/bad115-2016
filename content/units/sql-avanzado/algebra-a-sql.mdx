@@ -11,32 +11,79 @@ references:
   - unidad-2-ref-01
 sandbox:
   enabled: true
-  dataset: universidad
+  dataset: universidadEl álgebra relacional es el cimiento matemático del lenguaje SQL. Un lenguaje de bases de datos se considera **relacionalmente completo** si posee la capacidad expresiva para emular todas las operaciones del álgebra relacional.
+
+En la práctica, una relación se compone de un **esquema** (atributos y dominios) y una **instancia** (conjunto de tuplas en un instante dado). A continuación, se detalla la conversión de cada operador a sentencias SQL.
+
 ---
 
-El álgebra relacional constituye el cimiento matemático formal sobre el cual se edifican todas las operaciones de las bases de datos relacionales modernas. Concebido como un lenguaje procedimental, consta de un conjunto de operadores abstractos que aceptan una o dos relaciones (tablas) como operandos de entrada y producen invariablemente una nueva relación como salida, permitiendo la anidación y composición para formular consultas de complejidad arbitraria. La potencia de un lenguaje de base de datos se evalúa mediante su "completitud relacional"; un lenguaje, como SQL, se considera relacionalmente completo si posee la capacidad expresiva para emular todas las operaciones delineadas en el álgebra relacional.  
-La arquitectura teórica de una base de datos relacional dicta que una relación se compone de un esquema (los atributos y sus dominios de datos) y una instancia (el conjunto de tuplas o registros almacenados en un instante de tiempo). En este contexto, el álgebra relacional se divide conceptualmente en operaciones de conjuntos tradicionales y operaciones diseñadas específicamente para el modelo de datos.
+### Mapeo de Operadores Unarios a SQL
 
+* **Selección ($\sigma$):** Filtro de restricción horizontal que extrae tuplas que satisfacen un predicado lógico.
+  * *Álgebra:* $\sigma_{\text{Edad} > 24 \land \text{Ciudad} = \text{'Bogota'}}(\text{Personas})$
+  * *SQL:* `SELECT * FROM Personas WHERE Edad > 24 AND Ciudad = 'Bogota';`
+* **Proyección ($\pi$):** Filtro de restricción vertical que selecciona columnas específicas.
+  * *Álgebra:* $\pi_{\text{Nombre, Correo}}(\text{Personas})$
+  * *SQL:* `SELECT DISTINCT Nombre, Correo FROM Personas;`
+  * *Nota:* En álgebra pura, la proyección elimina duplicados de forma intrínseca. En SQL, el motor conserva duplicados por defecto para ahorrar recursos, requiriendo el uso de `DISTINCT` si se busca la pureza de conjuntos.
+* **Renombramiento ($\rho$):** Modifica el nombre de los atributos o relaciones resultantes.
+  * *Álgebra:* $\rho_{\text{P(N, C)}}(\text{Personas})$ (renombra la relación a P, y los atributos a N y C).
+  * *SQL:* Uso del operador `AS` para definir alias de tablas y columnas (ej. `SELECT Nombre AS N FROM Personas AS P;`).
 
-La operación de Selección, representada mediante la letra griega sigma (![Notación algebraica](/content/sql-avanzado/image1.png)), actúa como un filtro de restricción horizontal sobre una relación. Su propósito es extraer un subconjunto de tuplas que satisfacen de forma rigurosa un predicado o condición proposicional especificada. Desde la perspectiva del álgebra, la expresión ![Notación algebraica](/content/sql-avanzado/image2.png) genera una nueva relación con todas las tuplas de ![Notación algebraica](/content/sql-avanzado/image3.png) donde el predicado ![Notación algebraica](/content/sql-avanzado/image4.png) resulta verdadero. El predicado puede incluir operadores lógicos complejos, como conjunciones (![Notación algebraica](/content/sql-avanzado/image5.png) análogo a AND), disyunciones (![Notación algebraica](/content/sql-avanzado/image6.png) análogo a OR) y negaciones (![Notación algebraica](/content/sql-avanzado/image7.png) análogo a NOT). En la traducción directa al lenguaje SQL, esta operación matemática se implementa mediante la cláusula WHERE. Por ejemplo, la expresión algebraica ![Notación algebraica](/content/sql-avanzado/image8.png) se materializa en SQL como una instrucción declarativa que filtra el conjunto de resultados fila por fila: SELECT * FROM Personas WHERE Edad \> 24 AND Ciudad \= 'Bogota'1.  
-De manera complementaria, la Proyección, denotada por la letra griega pi (![Notación algebraica](/content/sql-avanzado/image9.png)), funciona como un filtro de restricción vertical. Esta operación selecciona un subconjunto de atributos (columnas) de la relación original y descarta el resto. La expresión matemática ![Notación algebraica](/content/sql-avanzado/image10.png) presenta una peculiaridad teórica fundamental: dado que el álgebra relacional se basa en la teoría de conjuntos y los conjuntos no admiten elementos duplicados, la proyección pura impone la eliminación intrínseca de cualquier tupla redundante en el resultado final. Sin embargo, la implementación de SQL mediante la cláusula SELECT se aparta del estándar teórico puro por consideraciones de rendimiento computacional; el motor SQL preservará las filas duplicadas a menos que el desarrollador exija explícitamente el cumplimiento del comportamiento de conjunto matemático empleando el modificador DISTINCT.  
-El Renombramiento, simbolizado por la letra griega rho (![Notación algebraica](/content/sql-avanzado/image11.png)), es una operación unaria que permite modificar el nombre de los atributos o de la relación resultante de una expresión algebraica. Matemáticamente expresada como ![Notación algebraica](/content/sql-avanzado/image12.png), devuelve el resultado de la expresión ![Notación algebraica](/content/sql-avanzado/image13.png) bajo el nuevo nombre ![Notación algebraica](/content/sql-avanzado/image14.png)4. Esta abstracción es vital para operaciones complejas como el auto-producto cartesiano. En SQL, esta operación se transcribe mediante el uso del operador AS para definir alias tanto para tablas en la cláusula FROM como para columnas en la cláusula SELECT.
+---
 
 ### Operaciones de Teoría de Conjuntos
-La aplicación de operadores de conjuntos clásicos sobre bases de datos relacionales exige que las relaciones involucradas sean "compatibles respecto a la unión". Esta condición requiere que ambas relaciones ostenten la misma aridad (identidad en el grado o número de atributos) y que los dominios subyacentes de los atributos correspondientes sean semánticamente idénticos o compatibles.  
-La operación de Unión (![Notación algebraica](/content/sql-avanzado/image15.png)) fusiona las tuplas de dos relaciones, garantizando un conjunto resultante donde cada elemento está presente en la primera relación, en la segunda, o en ambas, excluyendo duplicados. Esta operación matemática encuentra su paralelo exacto en el operador UNION de SQL, el cual incurre en el costo computacional de buscar y eliminar registros idénticos; si la lógica del negocio permite la redundancia, la variante UNION ALL elude esta validación optimizando el tiempo de ejecución.  
-La Intersección (![Notación algebraica](/content/sql-avanzado/image16.png)) produce una relación con las tuplas que existen simultáneamente en ambas relaciones base. En SQL, esta operación es invocada a través de la cláusula INTERSECT.  
-La Diferencia de Conjuntos (![Notación algebraica](/content/sql-avanzado/image17.png)) es un operador asimétrico que extrae las tuplas presentes en el primer operando que carecen de correspondencia en el segundo. La evaluación de ![Notación algebraica](/content/sql-avanzado/image18.png) identifica la exclusividad de ![Notación algebraica](/content/sql-avanzado/image3.png)4. En el estándar ANSI SQL, la diferencia se operacionaliza a través de la cláusula EXCEPT. Resulta analíticamente relevante destacar que históricamente algunos motores, como MySQL, no implementaron de forma nativa este operador en etapas tempranas de su desarrollo, lo cual obligó a los ingenieros a simular la integridad del álgebra relacional acudiendo a subconsultas apoyadas en los predicados lógicos NOT IN o NOT EXISTS.
 
-### Producto Cartesiano y la Familia de Reuniones (Joins)
-El Producto Cartesiano (![Notación algebraica](/content/sql-avanzado/image19.png)) es la operación binaria que concatena exhaustivamente cada tupla de una relación ![Notación algebraica](/content/sql-avanzado/image3.png) con la totalidad de tuplas de una relación ![Notación algebraica](/content/sql-avanzado/image20.png)1. Si la relación ![Notación algebraica](/content/sql-avanzado/image3.png) contiene ![Notación algebraica](/content/sql-avanzado/image21.png) atributos y ![Notación algebraica](/content/sql-avanzado/image22.png) tuplas, y la relación ![Notación algebraica](/content/sql-avanzado/image20.png) contiene ![Notación algebraica](/content/sql-avanzado/image23.png) atributos y ![Notación algebraica](/content/sql-avanzado/image24.png) tuplas, el esquema resultante abarcará ![Notación algebraica](/content/sql-avanzado/image25.png) atributos albergando un volumen de ![Notación algebraica](/content/sql-avanzado/image26.png) tuplas, representando el espacio combinatorio completo. Operativamente en SQL, esto se logra empleando la sintaxis CROSS JOIN o separando las tablas por comas en la cláusula FROM. Dada la magnitud de datos generada (explosión cartesiana), esta operación en aislamiento posee aplicaciones analíticas limitadas, pero funge como el pilar fundacional sobre el cual se construyen los operadores de reunión.  
-La Reunión Theta (![Notación algebraica](/content/sql-avanzado/image27.png)) es conceptualmente el resultado de ejecutar una operación de selección restrictiva sobre el producto cartesiano masivo de dos tablas. En notación algebraica, se define como ![Notación algebraica](/content/sql-avanzado/image28.png), donde el símbolo ![Notación algebraica](/content/sql-avanzado/image29.png) representa una condición evaluable compuesta por cualquier operador escalar de comparación (![Notación algebraica](/content/sql-avanzado/image30.png)). Cuando el predicado de la condición theta se restringe exclusivamente al operador de igualdad, la operación es categorizada formalmente como una Equi-reunión (Equi-Join). En el lenguaje SQL, esta abstracción se captura universalmente a través de la instrucción INNER JOIN seguida de la cláusula ON donde se especifican los criterios del enlace.  
-Una divergencia analítica profunda surge con la operación de Reunión Natural (![Notación algebraica](/content/sql-avanzado/image31.png)). La reunión natural es un subconjunto de la equi-reunión que asume implícitamente la igualdad lógica sobre todos los atributos que comparten nomenclatura y tipos de datos análogos entre ambas relaciones, eliminando de forma automática las columnas duplicadas en la proyección final. A nivel de SQL, el estándar provee la instrucción declarativa NATURAL JOIN. Sin embargo, la adopción de la reunión natural en entornos de desarrollo y producción se considera una práctica arquitectónica profundamente deficiente y riesgosa. Al depender exclusivamente de la coincidencia automática de nombres de columnas, el código se vuelve invisiblemente vulnerable a modificaciones estructurales silenciosas; si un administrador de base de datos altera el esquema introduciendo una columna de auditoría transversal (por ejemplo, fecha_creacion) en ambas tablas, un NATURAL JOIN existente incorporará inmediatamente este atributo a su condición de unión sin generar excepciones de sintaxis, corrompiendo la semántica de la consulta original y detonando fallos operacionales difíciles de rastrear. Por este motivo, el uso explícito de INNER JOIN ... ON ... prevalece invariablemente como la norma de ingeniería para garantizar el determinismo.
+Requieren que las relaciones sean **compatibles respecto a la unión** (mismo número de atributos y dominios compatibles de izquierda a derecha).
+
+* **Unión ($\cup$):** Fusiona las tuplas de dos relaciones.
+  * *SQL:* `UNION` (elimina registros idénticos) o `UNION ALL` (preserva redundancias, siendo más rápido).
+* **Intersección ($\cap$):** Obtiene los registros presentes en ambas tablas.
+  * *SQL:* `INTERSECT`.
+* **Diferencia ($-$):** Extrae las tuplas de la primera relación que no tienen correspondencia en la segunda.
+  * *SQL:* `EXCEPT` (o `MINUS` en algunos motores). En bases de datos que no lo soportaban históricamente (como MySQL), se simula con `NOT IN` o `NOT EXISTS`.
+
+---
+
+### Producto Cartesiano y Joins (Reuniones)
+
+* **Producto Cartesiano ($\times$):** Concatenación de cada tupla de la primera relación con todas las tuplas de la segunda, creando un espacio combinatorio completo.
+  * *SQL:* `CROSS JOIN` (o enumerar las tablas separadas por comas en el `FROM`).
+* **Reunión Theta ($\bowtie_{\theta}$):** Producto cartesiano filtrado por una condición $\theta$.
+  * *SQL:* `INNER JOIN ... ON ...` (ej. `SELECT * FROM A INNER JOIN B ON A.id = B.id`).
+* **Reunión Natural ($\bowtie$):** Equi-reunión automática por atributos homónimos (mismo nombre y tipo), proyectando una sola columna de los atributos repetidos.
+  * *SQL:* `NATURAL JOIN`.
+  * > [!WARNING]  
+    > Su uso en desarrollo y producción es una práctica de diseño riesgosa. Si el esquema evoluciona y se introduce una columna homónima no deseada en ambas tablas, el `NATURAL JOIN` la incorporará silenciosamente en la condición de unión, rompiendo la lógica del negocio sin dar error de sintaxis.
+
+---
 
 ### La Operación de División Relacional
-El operador de División (![Notación algebraica](/content/sql-avanzado/image32.png)) es estructuralmente una de las construcciones más complejas del álgebra relacional. Está diseñado matemáticamente para resolver interrogantes universales cualificadas típicamente por el cuantificador "todos"14. Para ilustrar la dinámica, asumiendo un escenario universitario: si se desea identificar a los estudiantes que han aprobado todos los cursos obligatorios, se divide una relación que asocia estudiantes con cursos tomados, entre una relación que define la totalidad de los cursos requeridos. La mecánica de esta división dicta que la relación ![Notación algebraica](/content/sql-avanzado/image3.png) (numerador) contiene "atributos adicionales" respecto a la relación ![Notación algebraica](/content/sql-avanzado/image20.png) (denominador); el operador extrae las tuplas de ![Notación algebraica](/content/sql-avanzado/image3.png) cuyos atributos adicionales cubren exhaustivamente todas las posibilidades existentes en el dominio de ![Notación algebraica](/content/sql-avanzado/image20.png)15.  
-La división no es una operación primitiva, sino una derivación construida mediante una amalgama de proyecciones, productos cartesianos y diferencias. La definición formal establece que si ![Notación algebraica](/content/sql-avanzado/image3.png) cuenta con atributos ![Notación algebraica](/content/sql-avanzado/image33.png) y ![Notación algebraica](/content/sql-avanzado/image20.png) con el atributo ![Notación algebraica](/content/sql-avanzado/image34.png), entonces: ![Notación algebraica](/content/sql-avanzado/image35.png)21. Este enfoque procedimental proyecta primero a todas las entidades posibles (estudiantes), forja combinaciones universales con el divisor (todos los cursos requeridos), resta las instancias reales para encontrar los déficits (estudiantes a los que les faltan cursos), y finalmente, extrae esos estudiantes deficientes del universo total, dejando únicamente a los candidatos exitosos.  
-A diferencia del álgebra, el lenguaje SQL adolece de una función de división directa equivalente, forzando la implementación de lógicas equivalentes mediante sentencias de cuantificación existencial y negación doble. La traducción exige formular la consulta como: "encontrar los estudiantes para los cuales *no existe* un curso requerido que ellos *no hayan* cursado" mediante anidamientos de NOT EXISTS y EXCEPT. Alternativamente, se recurre a una optimización declarativa moderna aprovechando extensiones algebraicas como la agrupación, combinando GROUP BY con la cláusula HAVING COUNT(*) \= (SELECT COUNT(*) FROM S), verificando que la intersección volumétrica iguale al objetivo.
+
+El operador de División ($\div$) resuelve consultas complejas que involucran cuantificadores universales ("todos", $\forall$).
+
+* *Ejemplo:* "Estudiantes que han aprobado *todos* los cursos obligatorios".
+* *Simulación en SQL:* Al no existir un operador directo, se implementa mediante:
+  1. **Doble negación con `NOT EXISTS`:** "Buscar estudiantes para los cuales *no exista* un curso obligatorio que *no figure* en su registro de aprobados".
+  2. **Agregación (`GROUP BY` + `HAVING`):** Verificar que la cantidad de cursos distintos aprobados por el estudiante iguale al conteo total de cursos requeridos:
+     ```sql
+     SELECT estudiante_id 
+     FROM aprobados
+     GROUP BY estudiante_id
+     HAVING COUNT(DISTINCT curso_id) = (SELECT COUNT(*) FROM cursos_obligatorios);
+     ```
+
+## Practica guiada
+
+<Callout title="Equi-join explicito">
+Prefiere INNER JOIN ... ON ... frente a NATURAL JOIN para evitar uniones accidentales cuando el esquema evoluciona.
+</Callout>
+
+<ExerciseBlock title="Join en SQL">
+Lista estudiantes con los cursos en los que estan inscritos usando INNER JOIN entre las tres tablas del sandbox.
+</ExerciseBlock>
+
+<SQLSandbox dataset="universidad" />ación declarativa moderna aprovechando extensiones algebraicas como la agrupación, combinando GROUP BY con la cláusula HAVING COUNT(*) \= (SELECT COUNT(*) FROM S), verificando que la intersección volumétrica iguale al objetivo.
 
 ## Practica guiada
 

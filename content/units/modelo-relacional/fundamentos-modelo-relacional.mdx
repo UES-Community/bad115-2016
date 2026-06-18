@@ -9,29 +9,64 @@ references:
   - elmasri-2016
   - sqlite-docs
   - unidad-1-ref-01
+-El modelo relacional destaca por su uniformidad estructural y su desvinculación total respecto de las estructuras de almacenamiento subyacentes, lo cual permite que su esquema pueda ser concebido íntegramente mediante construcciones matemáticas formales. El universo de discurso en una base de datos relacional se compone fundamentalmente de dominios y relaciones, sobre los cuales se imponen reglas inherentes dictadas por la naturaleza de los conjuntos matemáticos.
+
+### Dominios, Atributos y Normalización
+
+* **Dominio:** En la base de la jerarquía conceptual se encuentra el dominio. Se define formalmente como un conjunto nominado, finito y homogéneo de valores atómicos, el cual encapsula el espectro completo de valores lícitos que una propiedad específica puede adoptar dentro del sistema. La existencia de un dominio es ontológicamente independiente de las relaciones.
+  * **Declaración:** Pueden declararse por extensión (delimitando cada uno de sus elementos constituyentes) o por intensión (mediante un tipo de dato y restricciones algebraicas).
+  * **Atomicidad:** El modelo relacional puro prohíbe terminantemente la inclusión de estructuras anidadas, matrices o arreglos dentro de un dominio único. Cada intersección de fila y columna debe albergar un único valor indivisible.
+* **Atributo:** Cuando un dominio es implementado dentro de una relación específica, adopta el rol semántico de un atributo (la interpretación contextual del dominio dentro del esquema). Múltiples atributos pueden extraer sus valores de un mismo dominio (por ejemplo, el *límite de crédito* y el *saldo actual* provienen del dominio de números reales).
+
+#### El Proceso de Normalización
+La regla de atomicidad es el pilar del proceso de normalización:
+* **Primera Forma Normal (1FN):** Garantiza que todos los atributos contengan únicamente valores atómicos (indivisibles), facilitando la aplicación de operadores algebraicos sin requerir recursividad.
+* **Segunda Forma Normal (2FN):** Erradica las dependencias funcionales parciales, exigiendo que todo atributo dependa por completo de la clave primaria.
+* **Tercera Forma Normal (3FN):** Elimina las dependencias transitivas entre atributos que no forman parte de ninguna clave.
+
 ---
 
-El modelo relacional destaca por su uniformidad estructural y su desvinculación total respecto de las estructuras de almacenamiento subyacentes, lo cual permite que su esquema pueda ser concebido íntegramente mediante construcciones matemáticas formales. El universo de discurso en una base de datos relacional se compone fundamentalmente de dominios y relaciones, sobre los cuales se imponen reglas inherentes dictadas por la naturaleza de los conjuntos matemáticos.
-
-
-En la base de la jerarquía conceptual se encuentra el dominio. Un dominio se define formalmente como un conjunto nominado, finito y homogéneo de valores atómicos, el cual encapsula el espectro completo de valores lícitos que una propiedad específica puede adoptar dentro del sistema. La existencia de un dominio es ontológicamente independiente de las relaciones; por ejemplo, el dominio de los "números enteros positivos" existe de manera autónoma y puede ser instanciado en diversas partes de la base de datos. Los dominios pueden declararse por extensión, delineando cada uno de sus elementos constituyentes (típicamente en enumeraciones estáticas), o por intensión, mediante la asignación de un tipo de dato y restricciones algebraicas específicas.  
-La restricción fundamental que recae sobre los dominios es la atomicidad. El modelo relacional puro prohíbe terminantemente la inclusión de estructuras anidadas, matrices o arreglos dentro de un dominio único. Cada intersección de fila y columna en una relación debe albergar un, y solo un, valor indivisible. Este imperativo matemático es el que rige la Primera Forma Normal (1FN) en el proceso de normalización de esquemas, garantizando que los operadores algebraicos que se aplicarán posteriormente no requieran capacidades recursivas o de desanidamiento interno para evaluar predicados lógicos. Superada la primera forma normal, el diseño estructural persigue la Segunda Forma Normal (2FN), que erradica las dependencias funcionales parciales exigiendo que todo atributo dependa por completo de la clave principal, y la Tercera Forma Normal (3FN), que elimina dependencias transitivas entre atributos no clave.  
-Cuando un dominio es implementado dentro de una relación específica, adopta el rol semántico de un atributo. El atributo no es más que la interpretación contextual del dominio dentro del esquema de la relación. En consecuencia, múltiples atributos disjuntos dentro de un mismo esquema o a lo largo de esquemas heterogéneos pueden extraer sus valores de un mismo dominio subyacente. Por ejemplo, en una base de datos bancaria, tanto el atributo del límite de crédito de un cliente como el atributo del saldo actual de su cuenta obtienen sus representaciones numéricas del dominio matemático de los números reales estandarizados, aunque desempeñen funciones analíticas divergentes.
-
 ### La Estructura de la Relación: Tuplas, Grado y Cardinalidad
-Una relación, entendida desde su definición matemática estricta, se constituye como un subconjunto del producto cartesiano de una lista finita de dominios ![Notación algebraica](/content/modelo-relacional/image1.png)2. En términos de diseño físico y comercial, la relación es coloquialmente referida como tabla, la cual exhibe una bidimensionalidad intrínseca. Sin embargo, la teoría establece que una relación consta de varias facetas ontológicas: su nombre identificador, su cabecera (el esquema lógico que define el conjunto de pares atributo-dominio) y su cuerpo, que engloba el conjunto de las tuplas instanciadas en un momento temporal específico.  
-La unidad mínima de información instanciada es la tupla, la cual actúa como la ocurrencia, vector o registro que modela un hecho u objeto único del universo de discurso. Puesto que la matriz base se concibe en términos de álgebra de conjuntos pura, es cardinal entender que los elementos de un conjunto carecen de ordenamiento posicional. Las tuplas almacenadas no mantienen un orden implícito vertical, así como los atributos tampoco prescriben una jerarquía u ordenamiento horizontal. Cualquier presunción de secuencia en los sistemas relacionales debe ser impuesta de manera explícita en las sentencias de consulta, y no puede inferirse de la topología de almacenamiento original.  
-El grado de una relación cuantifica el número estático de atributos o columnas delineados en su esquema formal, mientras que la cardinalidad o aridad mide el número dinámico de tuplas o filas presentes en su cuerpo. Esta dualidad entre estatismo y dinamismo define el comportamiento operacional de los motores de bases de datos. El grado conforma una variable predecible durante el ciclo de vida del sistema transaccional, alterado únicamente mediante infrecuentes operaciones del Lenguaje de Definición de Datos (DDL). En contraste, la cardinalidad experimenta fluctuaciones constantes y volátiles impulsadas por las transacciones concurrentes del Lenguaje de Manipulación de Datos (DML), influyendo drásticamente en los histogramas de probabilidad que los optimizadores del motor interno consumen para trazar vías de ejecución.
+
+Una relación, entendida desde su definición matemática estricta, se constituye como un subconjunto del producto cartesiano de una lista finita de dominios ![Notación algebraica](/content/modelo-relacional/image1.png). 
+
+Físicamente se representa como una tabla bidimensional, conformada por:
+* **Esquema o Cabecera:** El nombre identificador y el conjunto de pares atributo-dominio.
+* **Cuerpo:** El conjunto de las tuplas instanciadas en un momento temporal.
+* **Tupla:** La unidad mínima de información instanciada (ocurrencia, vector o registro) que modela un hecho único. Carecen de ordenamiento posicional implícito (tanto horizontal como vertical).
+
+#### Conceptos de Grado y Cardinalidad
+* **Grado:** Cuantifica el número estático de atributos (columnas) delineados en su esquema formal. Es una variable predecible durante el ciclo de vida del sistema, alterada únicamente mediante operaciones DDL (`ALTER TABLE`).
+* **Cardinalidad (o Aridad):** Mide el número dinámico de tuplas (filas) presentes en su cuerpo. Experimenta fluctuaciones constantes impulsadas por transacciones DML (`INSERT`, `DELETE`), influyendo críticamente en el optimizador del motor.
+
+**Ejemplo de una Relación (Tabla):**
+
+| ID (Atributo 1) | Nombre (Atributo 2) | Saldo (Atributo 3) | $\rightarrow$ **Grado = 3** (3 Columnas estáticas) |
+| :--- | :--- | :--- | :--- |
+| 1001 | Ana Martínez | 2500.00 | $\leftarrow$ Tupla 1 |
+| 1002 | Carlos Gómez | 120.50 | $\leftarrow$ Tupla 2 |
+| **Cardinalidad = 2** | | | (2 Filas dinámicas en el cuerpo) |
+
+---
 
 ### Marcos de Integridad Inmanentes y Restricciones Semánticas
-El valor incuestionable del modelo relacional se sustenta no solo en su arquitectura tabular, sino en el andamiaje lógico que previene la corrupción del estado de los datos. El modelo enuncia reglas axiomáticas que obligan a los esquemas a mantener estados lógicos matemáticamente defendibles, divididas entre reglas inherentes (derivadas de la matemática del modelo) y restricciones semánticas (dictadas por las necesidades del analista de sistemas).  
-La restricción inherente más axiomática se fundamenta en la teoría de conjuntos: en un conjunto matemático, no pueden existir dos elementos estrictamente idénticos. Por consiguiente, el modelo relacional prohíbe taxativamente la inserción de tuplas duplicadas dentro de una misma relación. Para materializar esta exclusividad a nivel operativo, el modelo introduce el concepto de Clave Candidata (Candidate Key), definida como un subconjunto específico de atributos que, amalgamados, ostentan la capacidad de identificar de manera unívoca y mínimamente redundante a cada una de las tuplas que componen el tejido de la relación. La cualidad de minimalidad es imperativa, dictando que si a una clave candidata se le extrae cualquier atributo constituyente, debe perder inexorablemente su poder de identificación unívoca.  
-A partir del abanico de claves candidatas viables, el arquitecto de datos selecciona una Clave Primaria (Primary Key), relegando las opciones restantes a la categoría de claves alternativas. La designación de una clave primaria desencadena automáticamente la aplicación de la Regla de Integridad de Entidad. Esta regla estatuye un postulado innegociable: ningún atributo que participe en la conformación de una clave primaria puede albergar valores nulos o desconocidos (marcadores NULL). El razonamiento subyacente es deductivo: si se permitiera el uso de un marcador NULL, la entidad perdería su sello identificativo absoluto, haciendo teóricamente imposible la diferenciación entre dos vectores parcialmente opacos y socavando el axioma de no duplicidad de tuplas.  
-La vinculación entre esquemas disjuntos se consagra por medio de las Claves Foráneas o Ajenas (Foreign Keys). Una clave foránea es un conjunto de atributos localizados en una relación referenciadora cuyos valores están forzados matemáticamente a coincidir con los valores materializados en una clave candidata de una relación referenciada (que puede ser, en casos de jerarquía recursiva, la misma relación). Este mecanismo instrumentaliza la Regla de Integridad Referencial, garantizando que las tuplas subordinadas siempre posean un anclaje legítimo en una entidad superior, previniendo la proliferación destructiva de registros huérfanos que erosionarían la coherencia de la narrativa relacional.  
-Finalmente, aunque el modelo relacional se concibe teóricamente, su implementación en bases de datos exige la Integridad de Transacciones, encapsulada en las propiedades ACID: Atomicidad, Consistencia, Aislamiento y Durabilidad. La atomicidad determina que todas las transacciones lógicas, sin importar el volumen de tuplas afectadas, deben completarse integralmente o no dejar rastro alguno en la base de datos (mediante la emisión de un comando ROLLBACK), erigiendo una muralla contra la corrupción sistémica originada por fallas de hardware, software o colisiones de concurrencia a mitad de la ejecución.
+
+El modelo relacional mantiene la consistencia de los datos mediante reglas axiomáticas:
+
+1. **No Duplicidad de Tuplas:** En un conjunto matemático no pueden existir elementos idénticos. Para implementarlo se usa la **Clave Candidata (Candidate Key)**: un subconjunto mínimo de atributos capaz de identificar de forma unívoca a cada tupla. Debe cumplir con la *minimalidad* (si se extrae cualquier atributo, pierde su propiedad unívoca).
+2. **Clave Primaria (Primary Key):** Es la clave candidata elegida por el arquitecto de datos. El resto se consideran claves alternativas.
+3. **Regla de Integridad de Entidad:** Ningún atributo que participe en la clave primaria puede albergar valores nulos (`NULL`). De lo contrario, la entidad perdería su identidad y se violaría el axioma de no duplicidad.
+4. **Clave Foránea (Foreign Key):** Conjunto de atributos en una relación referenciadora cuyos valores deben coincidir con la clave primaria/candidata de una relación referenciada. Sostiene la **Regla de Integridad Referencial**, evitando registros huérfanos.
+
+#### Integridad de Transacciones (ACID)
+La consistencia en la ejecución de transacciones se rige por las propiedades ACID:
+* **Atomicidad:** La transacción se ejecuta completamente o no se ejecuta en absoluto (haciendo un `ROLLBACK`).
+* **Consistencia:** Una transacción lleva a la base de datos de un estado válido a otro estado válido.
+* **Aislamiento:** La ejecución concurrente de transacciones produce el mismo estado que si se ejecutaran secuencialmente.
+* **Durabilidad:** Una vez confirmada una transacción, sus efectos persisten incluso ante fallas del sistema.
 
 ## Idea clave
 
 <Callout title="Clave primaria">
-La integridad de entidad exige que ningun componente de la clave primaria sea NULL, pues cada tupla debe ser identificable de forma unica.
+La integridad de entidad exige que ningún componente de la clave primaria sea NULL, pues cada tupla debe ser identificable de forma única.
 </Callout>
