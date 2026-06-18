@@ -21,7 +21,7 @@ El optimizador toma decisiones apoyándose en dos métricas estadísticas fundam
 
 1. **Cardinalidad:** Representa el número de valores únicos y distintos en una columna. Una columna de "Género" (M/F) tiene baja cardinalidad, mientras que un "DNI" o "RFC" posee una cardinalidad altísima.
 2. **Selectividad:** Es la proporción de filas de la tabla que se espera que devuelva un filtro específico. Se calcula como:
-   $$\text{Selectividad} = \frac{\text{Cardinalidad de la condición}}{\text{Total de filas}}$$
+   $$Selectividad = (Cardinalidad\ de\ la\ condicion) / (Total\ de\ filas)$$
    * Una selectividad cercana a $1.0$ (o $100\%$) significa que el filtro devuelve casi toda la tabla.
    * Una selectividad cercana a $0.0$ (o $0\%$) indica que el filtro es muy discriminatorio y devuelve una cantidad mínima de filas.
 
@@ -67,10 +67,10 @@ El optimizador **solo puede utilizar** este índice si el filtro de la consulta 
   * `WHERE Pais = 'México' AND Edad = 30` (Usa el índice parcialmente para filtrar `Pais`, pero requiere realizar un escaneo interno para `Edad` debido a la ausencia de `Estado_Ciudad`).
 
 #### El Impacto de los Operadores de Rango
-Cuando se aplica un filtro de rango (`>`, `<`, `BETWEEN`, `LIKE 'abc%'`), el orden jerárquico se rompe a partir de esa columna, y los campos a su derecha en el índice no podrán ser utilizados para la búsqueda directa.
+Cuando se aplica un filtro de rango (`&gt;`, `&lt;`, `BETWEEN`, `LIKE 'abc%'`), el orden jerárquico se rompe a partir de esa columna, y los campos a su derecha en el índice no podrán ser utilizados para la búsqueda directa.
 
 <Callout type="info">
-**Axioma de Diseño:** Al crear índices compuestos, coloca siempre a la izquierda las columnas que se consultarán mediante comparaciones de igualdad estricta (`=`, `IN`), y a la derecha las columnas que usarán operadores de rango (`>`, `<`, `BETWEEN`).
+**Axioma de Diseño:** Al crear índices compuestos, coloca siempre a la izquierda las columnas que se consultarán mediante comparaciones de igualdad estricta (`=`, `IN`), y a la derecha las columnas que usarán operadores de rango (`&gt;`, `&lt;`, `BETWEEN`).
 </Callout>
 
 ---

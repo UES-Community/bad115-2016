@@ -2,7 +2,7 @@
 title: "Consultas y Transformaciones XML: XPath, XQuery y XSLT"
 slug: xpath-xquery-xslt
 unit: xml-datos
-summary: Para recuperar y transformar datos jerárquicos en XML, el W3C definió tres tecnologías clave basadas en el modelo de datos XDM: XPath, XQuery y XSLT.
+summary: "Para recuperar y transformar datos jerárquicos en XML, el W3C definió tres tecnologías clave basadas en el modelo de datos XDM: XPath, XQuery y XSLT."
 order: 2
 references:
   - silberschatz-2019
@@ -81,8 +81,8 @@ A diferencia de XQuery (orientado a consultas), XSLT está diseñado para la tra
 #### Paradigma Basado en Plantillas
 XSLT es un lenguaje declarativo guiado por el documento (*document-driven*). El procesador recorre el árbol XML y aplica reglas específicas cuando un nodo coincide con un patrón definido en una plantilla:
 
-* **`<xsl:template match="...">`:** Define la regla de transformación aplicable a los nodos que coincidan con la expresión XPath.
-* **`<xsl:apply-templates>`:** Delega el procesamiento de los nodos hijo a otras plantillas del documento.
+* **`&lt;xsl:template match="..."&gt;`:** Define la regla de transformación aplicable a los nodos que coincidan con la expresión XPath.
+* **`&lt;xsl:apply-templates&gt;`:** Delega el procesamiento de los nodos hijo a otras plantillas del documento.
 
 ```xml
 <!-- Ejemplo simple de hoja de estilos XSLT -->
@@ -102,12 +102,12 @@ XSLT es un lenguaje declarativo guiado por el documento (*document-driven*). El 
 </xsl:stylesheet>
 ```
 
-#### Agrupación en XSLT 2.0 / 3.0 (`<xsl:for-each-group>`)
+#### Agrupación en XSLT 2.0 / 3.0 (`&lt;xsl:for-each-group&gt;`)
 La agrupación estructural compleja (que en XSLT 1.0 requería el complejo método *Muenchian* usando funciones `generate-id()`) se simplificó sustancialmente mediante las siguientes directivas:
 
 * **`group-by`:** Agrupa elementos según el valor único de una clave de agrupación común.
 * **`group-adjacent`:** Agrupa elementos contiguos que comparten el mismo valor de clave (ideal para agrupar párrafos u elementos correlativos).
-* **`group-starting-with` / `group-ending-with`:** Agrupa secuencias de nodos basándose en un nodo delimitador inicial o final (como cabeceras `<h2>`).
+* **`group-starting-with` / `group-ending-with`:** Agrupa secuencias de nodos basándose en un nodo delimitador inicial o final (como cabeceras `&lt;h2&gt;`).
 * **Funciones de apoyo:** `current-group()` devuelve los nodos agrupados en la iteración actual y `current-grouping-key()` extrae el valor del criterio que generó el grupo.
 
 ---
@@ -118,6 +118,6 @@ La agrupación estructural compleja (que en XSLT 1.0 requería el complejo méto
 | :--- | :--- | :--- |
 | **Enfoque Principal** | Búsqueda y extracción de datos (*Query-driven*). | Transformación de formato y estructura (*Document-driven*). |
 | **Sintaxis** | Compacta y legible (similar a SQL y lenguajes funcionales). | XML Verboso (todas las etiquetas del script son XML válido). |
-| **Bifurcaciones Lógicas** | Estructuras directas: `if (cond) then A else B`. | Bloques estructurados XML: `<xsl:choose>`, `<xsl:when>`, `<xsl:otherwise>`. |
-| **Asignación de Variables** | Sintaxis ligera: `let $x := valor`. | Elemento XML: `<xsl:variable name="x" select="valor"/>`. |
+| **Bifurcaciones Lógicas** | Estructuras directas: `if (cond) then A else B`. | Bloques estructurados XML: `&lt;xsl:choose&gt;`, `&lt;xsl:when&gt;`, `&lt;xsl:otherwise&gt;`. |
+| **Asignación de Variables** | Sintaxis ligera: `let $x := valor`. | Elemento XML: `&lt;xsl:variable name="x" select="valor"/&gt;`. |
 | **Caso de Uso Común** | Consultas a bases de datos nativas XML (NXD) y orígenes heterogéneos. | Generación de interfaces web (HTML), reportes (PDF) y mapeo entre esquemas. |

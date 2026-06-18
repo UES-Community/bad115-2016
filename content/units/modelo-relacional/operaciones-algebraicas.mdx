@@ -37,15 +37,21 @@ Las operaciones fundamentales determinan la capacidad computacional de la base d
 Se aplican sobre una única relación. Son las herramientas de refinamiento más recurrentes, útiles para reducir el volumen de datos antes de realizar operaciones costosas.
 
 * **Selección ($\sigma$):** Funciona como un filtro horizontal. Se define como:
-  $$\sigma_{\text{condición}}(R)$$
-  La condición es un predicado booleano que puede contener atributos, constantes y operadores de comparación ($=, \neq, <, >, \le, \ge$) unidos por nexos lógicos ($\land, \lor, \neg$).
-  * *Ejemplo:* Filtrar empleados del departamento de ventas: $\sigma_{\text{depto} = \text{'Ventas'}}(\text{Empleados})$.
+  ```latex
+  \sigma[condicion](R)
+  ```
+  La condición es un predicado booleano que puede contener atributos, constantes y operadores de comparación ($=, \neq, &lt;, &gt;, \le, \ge$) unidos por nexos lógicos ($\land, \lor, \neg$).
+  * *Ejemplo:* Filtrar empleados del departamento de ventas: `\sigma[depto = 'Ventas'](Empleados)`.
 * **Proyección ($\pi$):** Realiza un filtrado vertical. Se define como:
-  $$\pi_{A_1, A_2, \dots, A_n}(R)$$
+  ```latex
+  \pi[A_1, A_2, \dots, A_n](R)
+  ```
   Extrae únicamente los atributos indicados. Debido a la teoría de conjuntos, si al eliminar columnas identificadoras (como llaves primarias) surgen tuplas duplicadas, estas se reducen automáticamente a una sola instancia.
-  * *Ejemplo:* Listar solo nombres y salarios: $\pi_{\text{nombre, salario}}(\text{Empleados})$.
+  * *Ejemplo:* Listar solo nombres y salarios: `\pi[nombre, salario](Empleados)`.
 * **Renombramiento ($\rho$):** Permite cambiar el nombre de una relación resultante o de sus atributos. Se define como:
-  $$\rho_{S(B_1, B_2, \dots, B_n)}(R)$$
+  ```latex
+  \rho[S(B_1, B_2, \dots, B_n)](R)
+  ```
   Es crucial para evitar colisiones de nombres, especialmente al realizar operaciones cruzadas de una relación consigo misma (self-join).
 
 ---
@@ -78,8 +84,10 @@ Provienen de la lógica de conjuntos. Para que las operaciones de **Unión**, **
 #### 1. Reunión (Join, $\bowtie$)
 Orquestado para reensamblar información normalizada distribuida en múltiples relaciones.
 
-* **Theta-Join ($R \bowtie_{\theta} S$):** Equivale a un producto cartesiano seguido de una selección según el predicado $\theta$:
-  $$R \bowtie_{\theta} S = \sigma_{\theta}(R \times S)$$
+* **Theta-Join ($R \bowtie_\theta S$):** Equivale a un producto cartesiano seguido de una selección según el predicado $\theta$:
+  ```latex
+  R \bowtie_\theta S = \sigma_\theta(R \times S)
+  ```
 * **Equi-Join:** Variante del Theta-Join donde el operador de comparación del predicado $\theta$ es la igualdad ($=$).
 * **Join Natural ($R \bowtie S$):** Autómata que evalúa automáticamente la igualdad en los atributos con nombres idénticos entre ambas relaciones, eliminando las columnas duplicadas de forma implícita.
 * **Outer Joins (Left, Right, Full):** Evitan la pérdida de información de tuplas que no tienen correspondencia en la otra relación, rellenando las columnas faltantes con marcadores nulos (`NULL`).
@@ -99,7 +107,9 @@ Para calcular $R(X, Y) \div S(Y)$:
 3. **Detectar faltantes:** Encontrar qué combinaciones ideales no existen realmente en nuestra relación original:
    $$T_3 = T_2 - R$$
 4. **Filtrar transgresores:** Restar del total de candidatos a aquellos que demostraron tener combinaciones faltantes:
-   $$\text{Resultado} = \pi_X(R) - \pi_X(T_3)$$
+   ```latex
+   Resultado = \pi_X(R) - \pi_X(T_3)
+   ```
 
 ## Practica guiada
 

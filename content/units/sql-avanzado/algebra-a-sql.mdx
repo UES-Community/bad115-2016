@@ -11,23 +11,24 @@ references:
   - unidad-2-ref-01
 sandbox:
   enabled: true
-  dataset: universidadEl álgebra relacional es el cimiento matemático del lenguaje SQL. Un lenguaje de bases de datos se considera **relacionalmente completo** si posee la capacidad expresiva para emular todas las operaciones del álgebra relacional.
+  dataset: universidad
+---
+
+El álgebra relacional es el cimiento matemático del lenguaje SQL. Un lenguaje de bases de datos se considera **relacionalmente completo** si posee la capacidad expresiva para emular todas las operaciones del álgebra relacional.
 
 En la práctica, una relación se compone de un **esquema** (atributos y dominios) y una **instancia** (conjunto de tuplas en un instante dado). A continuación, se detalla la conversión de cada operador a sentencias SQL.
-
----
 
 ### Mapeo de Operadores Unarios a SQL
 
 * **Selección ($\sigma$):** Filtro de restricción horizontal que extrae tuplas que satisfacen un predicado lógico.
-  * *Álgebra:* $\sigma_{\text{Edad} > 24 \land \text{Ciudad} = \text{'Bogota'}}(\text{Personas})$
+  * *Álgebra:* `\sigma[Edad > 24 \land Ciudad = 'Bogota'](Personas)`
   * *SQL:* `SELECT * FROM Personas WHERE Edad > 24 AND Ciudad = 'Bogota';`
 * **Proyección ($\pi$):** Filtro de restricción vertical que selecciona columnas específicas.
-  * *Álgebra:* $\pi_{\text{Nombre, Correo}}(\text{Personas})$
+  * *Álgebra:* `\pi[Nombre, Correo](Personas)`
   * *SQL:* `SELECT DISTINCT Nombre, Correo FROM Personas;`
   * *Nota:* En álgebra pura, la proyección elimina duplicados de forma intrínseca. En SQL, el motor conserva duplicados por defecto para ahorrar recursos, requiriendo el uso de `DISTINCT` si se busca la pureza de conjuntos.
 * **Renombramiento ($\rho$):** Modifica el nombre de los atributos o relaciones resultantes.
-  * *Álgebra:* $\rho_{\text{P(N, C)}}(\text{Personas})$ (renombra la relación a P, y los atributos a N y C).
+  * *Álgebra:* `\rho[P(N, C)](Personas)` (renombra la relación a P, y los atributos a N y C).
   * *SQL:* Uso del operador `AS` para definir alias de tablas y columnas (ej. `SELECT Nombre AS N FROM Personas AS P;`).
 
 ---
@@ -37,10 +38,10 @@ En la práctica, una relación se compone de un **esquema** (atributos y dominio
 Requieren que las relaciones sean **compatibles respecto a la unión** (mismo número de atributos y dominios compatibles de izquierda a derecha).
 
 * **Unión ($\cup$):** Fusiona las tuplas de dos relaciones.
-  * *SQL:* `UNION` (elimina registros idénticos) o `UNION ALL` (preserva redundancias, siendo más rápido).
-* **Intersección ($\cap$):** Obtiene los registros presentes en ambas tablas.
-  * *SQL:* `INTERSECT`.
-* **Diferencia ($-$):** Extrae las tuplas de la primera relación que no tienen correspondencia en la segunda.
+  * *SQL:* `UNION` (elimina duplicados) o `UNION ALL` (conserva duplicados).
+* **Intersección ($\cap$):** Encuentra las tuplas comunes a ambas relaciones.
+  * *SQL:* `INTERSECT`. En motores que no lo soportan (como MySQL), se simula con un `INNER JOIN` o un filtro `EXISTS`.
+* **Diferencia ($-$):** Sustrae las tuplas del segundo operando de las del primero.
   * *SQL:* `EXCEPT` (o `MINUS` en algunos motores). En bases de datos que no lo soportaban históricamente (como MySQL), se simula con `NOT IN` o `NOT EXISTS`.
 
 ---
@@ -49,7 +50,7 @@ Requieren que las relaciones sean **compatibles respecto a la unión** (mismo n�
 
 * **Producto Cartesiano ($\times$):** Concatenación de cada tupla de la primera relación con todas las tuplas de la segunda, creando un espacio combinatorio completo.
   * *SQL:* `CROSS JOIN` (o enumerar las tablas separadas por comas en el `FROM`).
-* **Reunión Theta ($\bowtie_{\theta}$):** Producto cartesiano filtrado por una condición $\theta$.
+* **Reunión Theta ($\bowtie_\theta$):** Producto cartesiano filtrado por una condición $\theta$.
   * *SQL:* `INNER JOIN ... ON ...` (ej. `SELECT * FROM A INNER JOIN B ON A.id = B.id`).
 * **Reunión Natural ($\bowtie$):** Equi-reunión automática por atributos homónimos (mismo nombre y tipo), proyectando una sola columna de los atributos repetidos.
   * *SQL:* `NATURAL JOIN`.

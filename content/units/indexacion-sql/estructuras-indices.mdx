@@ -59,7 +59,7 @@ WHERE Fecha BETWEEN '2025-01-01' AND '2025-12-31';
 Los índices Hash aplican una función matemática de dispersión sobre la clave para generar un código de longitud fija. Este código apunta directamente al compartimento de memoria (*bucket*) donde reside el puntero a la fila.
 
 * **Búsquedas de Igualdad ($O(1)$):** Ideales para encontrar un valor único y exacto de manera casi instantánea.
-* **Limitaciones Secuenciales:** No mantienen el orden de los datos. Son inútiles para consultas de rangos (`>`, `<`, `BETWEEN`), filtros de patrones (`LIKE 'abc%'`) u ordenamiento (`ORDER BY`).
+* **Limitaciones Secuenciales:** No mantienen el orden de los datos. Son inútiles para consultas de rangos (`&gt;`, `&lt;`, `BETWEEN`), filtros de patrones (`LIKE 'abc%'`) u ordenamiento (`ORDER BY`).
 
 <Callout type="warning">
 Los índices Hash están altamente especializados. Por esta razón, la mayoría de los motores de bases de datos usan **Árbol B+** por defecto y reservan los índices Hash para bases de datos en memoria o tablas clave-valor específicas.
